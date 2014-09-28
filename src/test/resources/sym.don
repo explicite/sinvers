@@ -1,0 +1,75 @@
+--------------------------------------------------------
+           General Data File for FORGE2
+--------------------------------------------------------
+
+.FICHIER
+ 	FMAY   = work.may             ! Part Mesh File
+ 	FOUT   = file.out             ! Tooling File
+ 	Delete
+.FIN FICHIER
+
+.UNITES
+ 	mm-kpa-mm.kg.s   ! Dimension of Length-Stress-Thermic
+.FIN UNITES
+
+.INCREMENT
+ Calage ! Automatic adjustment
+.FIN INCREMENT
+
+.RHEOLOGIE ! Part
+ 	Thermoecroui : hanselspittelnb1,
+              a1=1271649.000000, 
+              m1=-0.00254, 
+              m2=-0.05621, 
+              m3=0.1455, 
+              m4=-0.0324, 
+              m5=0, 
+              m6=0, 
+              m7=0, 
+              m8=0, 
+              m9=0, 
+              eps_ss=0 
+ 	Coeff Poisson = 3.000000e-001  ! Poissons's ration
+ 	Module Young  = 2.000000e+008  ! Young Modulus
+
+ 	Temp Init       = 20.00000  ! Initial Temperature 
+ 	Gravity
+ 	Inertie
+! Coulomb Friction Law
+ Outil 0 : Coulomb,
+ mu       = 0.120000
+.FIN RHEOLOGIE
+
+.THERMIQUE ! Part
+!Definition of the part thermal data
+ 	MVolumique  = 7.800000e-006  ! Density Rho
+ 	Cmassique   = 7.000000e+008  ! Heat Capacity, c 
+ 	Conductmat  = 2.300000e+004  ! Conductivity, k 
+!Definition of boundary Conditions between Part and Rigid Dies
+!---------------------------------------------------------
+ Outil 0
+   alphat        = 2.000000e+003 ! Global transfer  Coeff with rigid die
+   tempout       = 20.000000 ! Die Temperature 
+   effusoutil    = 1.176362e+004 ! Effusivity (SQRT(k.rho.c))
+!Definition of boundary Conditions between Part and external
+!---------------------------------------------------------
+ Face libre
+   alphat        = 1.000000e+001 !Global transfer  Coefficient with air
+   tempext       = 20.000000 ! External Temperature 
+   epsilon       = 8.800000e-001 ! Material Emissivite 
+.FIN THERMIQUE
+
+.pilotage
+    File = pilotage.dat,
+    hauteur actuelle = 12.00001,
+    hauteur finale = 7.522
+.fin pilotage
+
+.EXECUTION
+  Dt constant
+  Sans Visualisation
+.FIN EXECUTION
+
+.MAUTO
+  Fine Mesh
+.FIN MAUTO
