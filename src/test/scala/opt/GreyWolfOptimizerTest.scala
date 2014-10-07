@@ -5,7 +5,7 @@ import org.scalameter.api._
 import test.BaseTest
 
 import scala.math.Pi
-
+import io.ExecutionContext.context
 
 class GreyWolfOptimizerTest extends BaseTest {
   behavior of "GreyWolfOptimizer"
@@ -15,7 +15,7 @@ class GreyWolfOptimizerTest extends BaseTest {
   val dim = 3
   val ε = 0.001
 
-  it must "find min for Ackley's function over [-5, 5]" in {
+  /*it must "find min for Ackley's function over [-5, 5]" in {
     val min = AckleysFunction(Seq(0, 0))
     val gwo = new GreyWolfOptimizer(AckleysFunction, Seq(StaticInterval(-5d, 5d), StaticInterval(-5d, 5d)))
     AckleysFunction(gwo.min(wolfs, iterations)._1) should equal(min +- ε)
@@ -49,6 +49,6 @@ class GreyWolfOptimizerTest extends BaseTest {
     val min = McCormicFunction(Seq(-0.54719, -1.54719))
     val gwo = new GreyWolfOptimizer(McCormicFunction, Seq(StaticInterval(-1.5, 4d), StaticInterval(-3d, 4d)))
     McCormicFunction(gwo.min(wolfs, iterations)._1) should equal(min +- ε)
-  }
+  }*/
 
 }

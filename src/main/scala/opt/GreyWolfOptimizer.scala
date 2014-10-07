@@ -1,13 +1,15 @@
 package opt
 
-import io.ExecuctionContext.context
-
 import scala.collection.mutable.{Seq => MutableSeq}
-import scala.concurrent.{Await, Future, duration}
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 import scala.math.abs
 import scalax.chart.module.Charting
 
 case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, b: Seq[T]) extends Charting {
+
+  import io.ExecutionContext.context
+
   val dim = b.length
   val random = new java.security.SecureRandom()
 
@@ -87,11 +89,12 @@ case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, b: Seq[T
     while (iteration < iterations) {
       val futures = positions.zipWithIndex.map {
         case (_, index) => Future {
-          reorganize(index)
+            reorganize(index)
+          }
         }
-      }
 
-      Await.result(Future.sequence(futures), duration.Duration.Inf)
+
+      Await.result(Future.sequence(futures), Duration.Inf)
 
       val a: Double = 2d - iteration * (2d / iterations)
 
@@ -137,4 +140,3 @@ case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, b: Seq[T
   }
 
 }
-

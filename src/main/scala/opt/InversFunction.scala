@@ -8,9 +8,8 @@ import data.DataFile
 import io.{DON, Forge}
 import math._
 import reo.HSArgs
-import util.{KZ, XORShiftRandom}
+import util.{FileManipulator, KZ, XORShiftRandom}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scalax.chart.module.Charting
 
 case class InversFunction(forge: Forge, originalDon: DON, data: DataFile) extends Charting {
@@ -55,20 +54,22 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile) extend
 
     val computed = forge process don
 
-    if (computed.empty) {
+    val fit = if (computed.isEmpty) {
       Double.MaxValue
     } else {
       val computedForce = computed.force.map(_ * 1016.0469053138122)
       val interpolatedForce = computed.jaw.map(interpolator(_))
 
       val computedFitness = computedForce.zip(interpolatedForce).map { case (c, ii) => scala.math.sqrt((c - ii) * (c - ii))}.sum / computedForce.size
-      //if (computedFitness < 2)
+      if (computedFitness < 15)
         forceSeries.addSeries(computed.jaw.zip(computedForce).toXYSeries(s"cf:$computedFitness"))
-
-      println(s"fitness:$computedFitness")
 
       computedFitness
     }
+
+    println(s"fitness:$fit")
+
+    fit
   }
 
 
@@ -77,7 +78,7 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile) extend
       try {
         Files.copy(path, Paths.get(directory(path.getFileName.toString)), REPLACE_EXISTING)
       } catch {
-        case e: Exception => fileCopy(path)(directory)
+        case t: Throwable => fileCopy(path)(directory)
       }
     }
 
@@ -102,4 +103,6 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile) extend
 
     don
   }
+
+
 }

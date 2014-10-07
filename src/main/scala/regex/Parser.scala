@@ -5,6 +5,9 @@ trait Parser {
   protected val VirtualLoadRegex = """(virtual forging load\s*:\s*)(-?\+?\d+.)(\d*E?\+?\-*\d+)?""".r
   protected val HeightRegex = """(height\s*:\s*)(-?\+?\d+\.*)(\d*E?\+?\-*\d+)?""".r
 
+  //ERRORS
+  protected val ReloadRegex = """The process cannot access""".r
+
   //Hansel-Spittel
   object DONRegex {
     val a1Regex = """(a1=)(-?\+?\d+\.*)(\d*E?\+?\-*\d+)?""".r

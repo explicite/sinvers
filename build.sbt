@@ -10,6 +10,7 @@ libraryDependencies ++= Seq(
   "org.scalacheck" %% "scalacheck" % "1.11.5" % "test",
   "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test",
   "com.github.wookietreiber" % "scala-chart_2.11" % "0.4.2",
+  "com.lowagie" % "itext" % "4.2.1",
   "com.storm-enroute" %% "scalameter" % "0.6" % "test"
 )
 

@@ -16,16 +16,16 @@ object Application {
     val experimentData = DataFile(new java.io.File(experimentDirectory))
     val function = InversFunction(process, don, experimentData)
     val bounds = Seq(
-      IntervalWithTolerance(8391.038944327514, 1), //a1 ok
-      IntervalWithTolerance(-0.0029205021897638073, 1), //m1 ok
-      IntervalWithTolerance(-0.2474891475591282, 1), //m2 ok
-      IntervalWithTolerance(0.19531189181363873, 1), //m3 ok
-      IntervalWithTolerance(-0.04314211922812594, 1), //m4 ok
-      IntervalWithTolerance(1.0225047101330986E-4, 1), //m5
+      IntervalWithTolerance(20000.285919249167, 1), //a1 ok
+      IntervalWithTolerance(-0.0011415601892736061, 3), //m1 ok
+      IntervalWithTolerance(-0.31645294641921773, 3), //m2 ok
+      IntervalWithTolerance(0.0396536972818135, 3), //m3 ok
+      IntervalWithTolerance(-0.05968658294035687, 3), //m4 ok
+      IntervalWithTolerance(1.7824317209455084E-5, 3), //m5
       IntervalWithTolerance(0.0), //m6
-      IntervalWithTolerance(1.4944200052458E-4, 1), //m7
-      IntervalWithTolerance(1.4672012304567882E-4, 1), //m8 ok
-      IntervalWithTolerance(0.7877795815755233, 1), //m9
+      IntervalWithTolerance(7.322474544897119E-5, 3), //m7
+      IntervalWithTolerance(4.933482677015285E-5, 3), //m8 ok
+      IntervalWithTolerance(0.5247387458805934, 3), //m9
       StaticInterval(0.0) //epSS
     )
     val optimizer = GreyWolfOptimizer(function.fitness, bounds)

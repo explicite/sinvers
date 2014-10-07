@@ -22,11 +22,8 @@ public class FileManipulator {
         }
 
     };
-    public void DeleteDirectory(Path directory){
-        try {
-            Files.walkFileTree(directory, visitor);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+    public void DeleteDirectory(Path directory)  throws IOException  {
+        Files.walkFileTree(directory, visitor);
     }
 }

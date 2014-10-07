@@ -6,7 +6,7 @@ import scala.io.Source
 
 case class Data(force: Seq[Double],
                 jaw: Seq[Double]) {
-  val empty = force.size == 0 && jaw.size == 0
+  val isEmpty = force.size == 0 && jaw.size == 0
 }
 
 object Data {
@@ -28,6 +28,13 @@ object Data {
       }
     }.toSeq.unzip
 
+    Data(force, jaw)
+  }
+
+  val empty = Data(Seq.empty, Seq.empty)
+
+  implicit def ToupleToData(sx: Seq[(Double, Double)]): Data = {
+    val (force, jaw) = sx.unzip
     Data(force, jaw)
   }
 }

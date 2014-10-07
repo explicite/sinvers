@@ -1,6 +1,6 @@
 package io
 
-object ExecuctionContext {
+object ExecutionContext {
   import java.util.concurrent.Executors
   import scala.concurrent._
 
@@ -11,6 +11,6 @@ object ExecuctionContext {
       threadPool.submit(runnable)
     }
 
-    def reportFailure(t: Throwable) { println(t)}
+    def reportFailure(t: Throwable) { Unit }
   }
 }
