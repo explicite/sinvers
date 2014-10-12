@@ -54,14 +54,11 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile) extend
 
     val computed = forge process don
 
-    val fit = if (computed.isEmpty) {
-      Double.MaxValue
-    } else {
+    val fit =  {
       val computedForce = computed.force.map(_ * 1016.0469053138122)
-      val interpolatedForce = computed.jaw.map(interpolator(_))
 
-      val computedFitness = computedForce.zip(interpolatedForce).map { case (c, ii) => scala.math.sqrt((c - ii) * (c - ii))}.sum / computedForce.size
-      if (computedFitness < 15)
+      val computedFitness = computed.fit(interpolator, interval)
+      if (computedFitness < 20)
         forceSeries.addSeries(computed.jaw.zip(computedForce).toXYSeries(s"cf:$computedFitness"))
 
       computedFitness

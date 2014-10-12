@@ -2,11 +2,31 @@ package data
 
 import java.io.File
 
+import math.PolynomialSplineFunction
+import opt.Interval
+
 import scala.io.Source
 
 case class Data(force: Seq[Double],
                 jaw: Seq[Double]) {
-  val isEmpty = force.size == 0 && jaw.size == 0
+  private val KGF = 1016.0469053138122
+  val size = {
+    if (force.size != jaw.size) throw new Exception("Data length for force and displacement are not equal!")
+    force.size
+  }
+  val nonEmpty = size != 0
+
+  def valid(interval: Interval): Boolean = nonEmpty && size >= 30
+
+  def fit(experimentDataInterpolator: PolynomialSplineFunction, interval: Interval): Double = {
+    if (valid(interval)) {
+      val computedForce = force.map(_ * KGF)
+      val interpolatedForce = jaw.map(experimentDataInterpolator(_))
+      computedForce.zip(interpolatedForce).map { case (c, ii) => scala.math.sqrt((c - ii) * (c - ii))}.sum / computedForce.size
+    } else {
+      Double.MaxValue
+    }
+  }
 }
 
 object Data {
