@@ -75,7 +75,7 @@ case class Forge(fx2Dir: String) extends Parser {
       }
     }
 
-    def end() = {
+    def onTheEnd() = {
       if (current != null)
         current.destroy()
 
@@ -95,7 +95,7 @@ case class Forge(fx2Dir: String) extends Parser {
       current = process.run(io)
       current.exitValue()
       Data(load, height)
-    }(10 minutes, Data.empty, end)
+    }(10 minutes, Data.empty, onTheEnd)
   }
 
 

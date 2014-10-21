@@ -58,7 +58,7 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile) extend
       val computedForce = computed.force.map(_ * 1016.0469053138122)
 
       val computedFitness = computed.fit(interpolator, interval)
-      if (computedFitness < 20)
+      if (computedFitness < 10)
         forceSeries.addSeries(computed.jaw.zip(computedForce).toXYSeries(s"cf:$computedFitness"))
 
       computedFitness

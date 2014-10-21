@@ -9,6 +9,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 public class FileManipulator {
     private static SimpleFileVisitor<Path> visitor = new SimpleFileVisitor<Path>() {
+
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
             Files.delete(file);
@@ -26,4 +27,5 @@ public class FileManipulator {
     public void DeleteDirectory(Path directory)  throws IOException  {
         Files.walkFileTree(directory, visitor);
     }
+
 }

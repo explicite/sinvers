@@ -89,10 +89,9 @@ case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, b: Seq[T
     while (iteration < iterations) {
       val futures = positions.zipWithIndex.map {
         case (_, index) => Future {
-            reorganize(index)
-          }
+          reorganize(index)
         }
-
+      }
 
       Await.result(Future.sequence(futures), Duration.Inf)
 
