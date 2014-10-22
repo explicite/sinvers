@@ -42,7 +42,6 @@ case class NelderMead(f: (Seq[Double]) => Double) {
           pi(values.indexOf(values.max)) = pz
         }
       }
-      println(min)
     } until pi.filter(_ != min).forall(p => f(p) - f(min) < ε)
 
     min
