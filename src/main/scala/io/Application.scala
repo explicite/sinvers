@@ -16,21 +16,21 @@ object Application {
     val experimentData = DataFile(new java.io.File(experimentDirectory))
     val function = InversFunction(process, don, experimentData)
     val bounds = Seq(
-      IntervalWithTolerance(3918.5095068309856, 0.2), //a1 ok
-      IntervalWithTolerance(-0.001435642018064198, 0.5), //m1 ok
-      IntervalWithTolerance(-0.17569654414715932, 0.5), //m2 ok
-      IntervalWithTolerance(0.034145892799436285, 0.5), //m3 ok
-      IntervalWithTolerance(-0.03798843952823311, 0.5), //m4 ok
-      StaticInterval(-1.971630866804775E-5, 1.971630866804775E-5), //m5
+      IntervalWithTolerance(607.0044998611718, 0.1), //a1 ok
+      IntervalWithTolerance(-0.006566258245714811, 1), //m1 ok
+      IntervalWithTolerance(-0.21007539044798862, 1), //m2 ok
+      IntervalWithTolerance(-0.2076373049421277, 1), //m3 ok
+      IntervalWithTolerance(-0.046202182847251284, 1), //m4 ok
+      IntervalWithTolerance(1.3470572457687486E-4, 1), //m5
       StaticInterval(0.0), //m6
-      StaticInterval(-9.370732092494505E-5, 9.370732092494505E-5), //m7
-      StaticInterval(-3.801271044010449E-5, 3.801271044010449E-5), //m8 ok
-      IntervalWithTolerance(0.5987121097007685, 0.5), //m9
+      IntervalWithTolerance(-0.15230128443911398, 1), //m7
+      IntervalWithTolerance(1.9711823426304953E-4, 1), //m8 ok
+      IntervalWithTolerance(0.6570079207003687, 1), //m9
       StaticInterval(0.0) //epSS
     )
     val optimizer = GreyWolfOptimizer(function.fitness, bounds)
 
-    val min = optimizer.min(20, 50)
+    val min = optimizer.min(20, 30)
 
     println(min)
   }

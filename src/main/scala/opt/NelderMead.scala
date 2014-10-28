@@ -1,29 +1,33 @@
 package opt
 
+/**
+ * @param f
+ * @param α
+ * @param β
+ * @param γ
+ * @param δ
+ */
 case class NelderMead(f: (Seq[Double]) => Double,
-                      p0: Seq[Double],
-                      p1: Seq[Double],
-                      p2: Seq[Double]) {
+                      α: Double = 1.0,
+                      β: Double = 0.5,
+                      γ: Double = 2.0,
+                      δ: Double = 0.5) {
 
   /**
-   *
-   * @param α
-   * @param β
-   * @param γ coefficient of expansion greater than 2
-   * @param δ
-   * @param ε
+   * @param ε error
    */
-  def min(α: Double = 1.0,
-          β: Double = 0.5,
-          γ: Double = 2.0,
-          δ: Double = 0.5,
-          ε: Double = 0.01) = {
+  def minimize(points: Seq[Seq[Double]],
+          ε: Double = 0.01): Seq[Double] = {
 
+    implicit val context = EvaluationContext(f, α, β, γ, δ)
+
+    def iteration(simplex: Simplex): Simplex = {
+      if(simplex.transformable(ε)) iteration(simplex.transform) else simplex
+    }
+
+    val simplex = Simplex(points)
+
+    iteration(simplex).min
   }
-
-  def reflection = ???
-  def expansion = ???
-  def narrowing = ???
-  def reduction = ???
 
 }

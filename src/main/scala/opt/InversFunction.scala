@@ -7,7 +7,7 @@ import javax.swing.JFrame
 import data.DataFile
 import io.{DON, Forge}
 import math._
-import reo.HSArgs
+import reo.{CustomArgs, HSArgs}
 import util.{FileManipulator, KZ, XORShiftRandom}
 
 import scalax.chart.module.Charting
@@ -51,6 +51,8 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile) extend
 
     val hsArgs = HSArgs(args)
     don.updateHS(hsArgs)
+    /*val customArgs = CustomArgs(args)
+    don.updateCustom(customArgs)*/
 
     val computed = forge process don
 
@@ -58,7 +60,7 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile) extend
       val computedForce = computed.force.map(_ * 1016.0469053138122)
 
       val computedFitness = computed.fit(interpolator, interval)
-      if (computedFitness < 10)
+      if (computedFitness < 5)
         forceSeries.addSeries(computed.jaw.zip(computedForce).toXYSeries(s"cf:$computedFitness"))
 
       computedFitness
