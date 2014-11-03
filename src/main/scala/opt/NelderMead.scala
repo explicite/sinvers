@@ -21,13 +21,16 @@ case class NelderMead(f: (Seq[Double]) => Double,
 
     implicit val context = EvaluationContext(f, α, β, γ, δ)
 
+
     def iteration(simplex: Simplex): Simplex = {
-      if(simplex.transformable(ε)) iteration(simplex.transform) else simplex
+      //if(simplex.transformable(ε)) iteration(simplex.transform) else simplex
+      if(context.function(simplex.min) > ε) iteration(simplex.transform) else simplex
     }
 
     val simplex = Simplex(points)
 
     iteration(simplex).min
   }
+
 
 }

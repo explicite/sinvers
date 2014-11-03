@@ -7,7 +7,7 @@ import data.Data
 import regex.Parser
 import util.FileManipulator
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import io.ExecutionContext.context
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.sys.process._
@@ -95,7 +95,7 @@ case class Forge(fx2Dir: String) extends Parser {
       current = process.run(io)
       current.exitValue()
       Data(load, height)
-    }(10 minutes, Data.empty, onTheEnd)
+    }(15 minutes, Data.empty, onTheEnd)
   }
 
 

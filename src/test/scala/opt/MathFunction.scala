@@ -1,17 +1,15 @@
 package opt
 
-import scala.concurrent.Future
 import scala.math._
-import io.ExecutionContext.context
 
 object MathFunction {
-  def AckleysFunction(xs: Seq[Double]) =  {
+  def AckleysFunction(xs: Seq[Double]) = {
     val x = xs(0)
     val y = xs(1)
     -20 * exp(-0.2 * sqrt(0.5 * ((x * x) + (y * y)))) - exp(0.5 * (cos(2 * Pi * x) + cos(2 * Pi * y))) + 20 + E
   }
 
-  def SphereFunction(xs: Seq[Double]) =  {
+  def SphereFunction(xs: Seq[Double]) = {
     xs.foldLeft(0d)((res, x) => res + (x * x))
   }
 
@@ -23,15 +21,33 @@ object MathFunction {
       ((2.625 - x + (x * y * y * y)) * (2.625 - x + (x * y * y * y)))
   }
 
-  def RastriginFunction(xs: Seq[Double]) =  {
+  def RastriginFunction(xs: Seq[Double]) = {
     (10d * xs.length) + xs.foldLeft(0d)((res, x) => res + ((x * x) - (10d * cos(2d * Pi * x))))
   }
 
-  def EasomFunction(xs: Seq[Double]) =  {
+  def EasomFunction(xs: Seq[Double]) = {
     -cos(xs(0)) * cos(xs(1)) * exp(-(((xs(0) - Pi) * (xs(0) - Pi)) + ((xs(1) - Pi) * (xs(1) - Pi))))
   }
 
-  def McCormicFunction(xs: Seq[Double]) =  {
+  def McCormicFunction(xs: Seq[Double]) = {
     sin(xs(0) + xs(1)) + ((xs(0) - xs(1)) * (xs(0) - xs(1))) - (1.5 * xs(0)) + (2.5 * xs(1)) + 1d
+  }
+
+  def BoothFunction(xs: Seq[Double]) = {
+    val x = xs(0)
+    val y = xs(1)
+    ((x + (2 * y) - 7) * (x + (2 * y) - 7)) + (((2 * x) + y - 5) * ((2 * x) + y - 5))
+  }
+
+  def BukinFunction(xs: Seq[Double]) = {
+    val x = xs(0)
+    val y = xs(1)
+    100 * sqrt(abs(y - (0.01 * x * x))) + (0.01 * abs(x + 10))
+  }
+
+  def LeviFunction(xs: Seq[Double]) = {
+    val x = xs(0)
+    val y = xs(1)
+    (sin(3 * Pi * x) * sin(3 * Pi * x)) + ((x - 1) * (x - 1) * (1 + (sin(3 * Pi * y) * sin(3 * Pi * y)))) + (((y - 1) * (y - 1)) * (1 + (sin(2 * Pi * y) * sin(2 * Pi * y))))
   }
 }

@@ -21,11 +21,11 @@ import scala.io.Source
  * @param m9 the temperature coefficient of the material of the impact
  * @param epsSs
  */
-case class HSArgs(a1: Double = 1271649,
-                  m1: Double = -0.00254,
-                  m2: Double = -0.05621,
-                  m3: Double = 0.1455,
-                  m4: Double = -0.0324,
+case class HSArgs(a1: Double = 0,
+                  m1: Double = 0,
+                  m2: Double = 0,
+                  m3: Double = 0,
+                  m4: Double = 0,
                   m5: Double = 0,
                   m6: Double = 0,
                   m7: Double = 0,
@@ -49,9 +49,9 @@ object HSArgs {
 
 case class HanselSpittel(file: File) extends Parser {
   val don = DON(file)
-  
+
   def update(hsArgs: HSArgs) = {
-    don.updateHS(hsArgs)    
+    don.updateHS(hsArgs)
   }
 
   def current: HSArgs = {
