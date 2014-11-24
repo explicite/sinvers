@@ -7,19 +7,20 @@ import data.Data
 import regex.Parser
 import util.FileManipulator
 
+//import scala.concurrent.ExecutionContext.Implicits.global
 import io.ExecutionContext.context
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.sys.process._
 
-case class Forge(fx2Dir: String) extends Parser {
+case class Forge(xf2Dir: String) extends Parser {
 
   def process(don: DON): Data = {
     val process: ProcessBuilder =
       Process(
-        Seq(s"$fx2Dir\\bin\\xf2_p1.exe", don.name),
+        Seq(s"$xf2Dir\\bin\\xf2_p1.exe", don.name),
         don.file.getParentFile,
-        "PP2D_DIR" -> fx2Dir,
+        "PP2D_DIR" -> xf2Dir,
         "FORGE2_IO" -> "BIG_ENDIAN",
         "lang" -> "eng",
         "WORK_DIR" -> "don.workingDirectory")
@@ -42,16 +43,26 @@ case class Forge(fx2Dir: String) extends Parser {
     don.refresh()
 
     val random = new util.XORShiftRandom()
+    var time = List[Double]()
     var load = List[Double]()
     var height = List[Double]()
+    var velocity = List[Double]()
     var current: Process = null
     def processDataLine(line: String): Unit = {
+      IncrementTimeRegex findFirstIn line match {
+        case Some(IncrementTimeRegex(_, mantissa, exponent)) => time ::= formatDouble(mantissa, exponent)
+        case None => Unit
+      }
       VirtualLoadRegex findFirstIn line match {
         case Some(VirtualLoadRegex(_, mantissa, exponent)) => load ::= formatDouble(mantissa, exponent)
         case None => Unit
       }
       HeightRegex findFirstIn line match {
         case Some(HeightRegex(_, mantissa, exponent)) => height ::= formatDouble(mantissa, exponent)
+        case None => Unit
+      }
+      VelocityRegex findFirstIn line match {
+        case Some(VelocityRegex(_, mantissa, exponent)) => velocity ::= formatDouble(mantissa, exponent)
         case None => Unit
       }
     }
@@ -79,7 +90,7 @@ case class Forge(fx2Dir: String) extends Parser {
       if (current != null)
         current.destroy()
 
-      Thread.sleep(1000)
+      Thread.sleep(2000)
       cleanUp(don.file.getParentFile)
     }
 
@@ -94,7 +105,7 @@ case class Forge(fx2Dir: String) extends Parser {
     fallback {
       current = process.run(io)
       current.exitValue()
-      Data(load, height)
+      Data(time, load, height, velocity)
     }(15 minutes, Data.empty, onTheEnd)
   }
 

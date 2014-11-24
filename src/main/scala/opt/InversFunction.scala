@@ -32,15 +32,15 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile) extend
   val interpolator: PolynomialSplineFunction = {
     val current = data.current
     val force = current.force
-    val jaw = current.jaw.map(12d + _)
+    val jaw = current.jaw //.map(12d + _)
 
     val (filteredForce, filteredJaw) = force.zip(jaw).filter { case (f, j) => j >= interval.min && j <= interval.max}.groupBy(_._2).map(_._2.head).toSeq.sortBy(_._2).unzip
-    //forceSeries.addSeries(filteredJaw.zip(filteredForce).toXYSeries("experiment"))
-    val splineInterpolator = Interpolator.splineInterpolate(filteredJaw.toArray, KZ(filteredForce, 100, 5).toArray)
+    forceSeries.addSeries(filteredJaw.zip(filteredForce).toXYSeries("experiment"))
+    val splineInterpolator = Interpolator.splineInterpolate(filteredJaw.toArray, filteredForce.toArray)
 
-    val presentJaw = Seq.tabulate(100)(index => (((index + 1d) / 100d) * (12 - 7.522)) + 7.522)
+    /*val presentJaw = Seq.tabulate(100)(index => (((index + 1d) / 100d) * (12 - 7.522)) + 7.522)
     val presentForce = presentJaw.map(splineInterpolator(_))
-    forceSeries.addSeries(presentJaw.zip(presentForce).toXYSeries("interpolated"))
+    forceSeries.addSeries(presentJaw.zip(presentForce).toXYSeries("interpolated"))*/
     splineInterpolator
   }
 
@@ -50,17 +50,21 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile) extend
     val don = prepareFiles(random.randomAlpha(40))
 
     val hsArgs = HSArgs(args(0), args(1), args(2), args(3), args(4))
+    //val hsArgs = HSArgs(args)
     don.updateHS(hsArgs)
-    /*val customArgs = CustomArgs(args)
-    don.updateCustom(customArgs)*/
+
+    /*    val customArgs = CustomArgs(args)
+        don.updateCustom(customArgs)*/
 
     val computed = forge process don
+    /*  val computedFile = new java.io.File("C:\\Users\\Jan\\Desktop\\sym\\computed.txt")
+      computed.save(computedFile)*/
 
     val fit = {
-      val computedForce = computed.force.map(_ * 1016.0469053138122)
+      val computedForce = computed.force //.map(_ * 1016.0469053138122)
 
       val computedFitness = computed.fit(interpolator, interval)
-      if (computedFitness < 5)
+      //if (computedFitness < 0.001)
         forceSeries.addSeries(computed.jaw.zip(computedForce).toXYSeries(s"cf:$computedFitness"))
 
       computedFitness

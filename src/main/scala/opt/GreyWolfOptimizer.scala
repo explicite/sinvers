@@ -19,9 +19,9 @@ case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, b: Seq[T
    * @param a number of search actors
    * @param i number of iterations
    *
-   * @return minimum (best position, best score)
+   * @return minimum (best position)
    */
-  def min(a: Int, i: Int): (Seq[Double], Double) = optimize(a, i)(MIN)
+  def min(a: Int, i: Int): Seq[Double] = optimize(a, i)(MIN)
 
   /**
    * Find maximum
@@ -29,12 +29,11 @@ case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, b: Seq[T
    * @param a number of search actors
    * @param i number of iterations
    *
-   * @return optimum (best position, best score)
+   * @return optimum (best position)
    */
-  def max(a: Int, i: Int): (Seq[Double], Double) = optimize(a, i)(MAX)
+  def max(a: Int, i: Int): Seq[Double] = optimize(a, i)(MAX)
 
-  private def optimize(numberOfActors: Int, iterations: Int)(opt: Optimum): (Seq[Double], Double) = {
-    //TODO
+  private def optimize(numberOfActors: Int, iterations: Int)(opt: Optimum): Seq[Double] = {
     val alphaSeries = Seq[(Double, Double)]() toXYSeries "alpha"
 
     val chart = XYLineChart(alphaSeries)
@@ -125,7 +124,7 @@ case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, b: Seq[T
       iteration += 1
     }
 
-    (alphaPos, alphaScore)
+    alphaPos
   }
 
   private def backToSpace(p: MutableSeq[Double]): MutableSeq[Double] = {

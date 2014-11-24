@@ -1,9 +1,12 @@
 package regex
 
 trait Parser {
-  protected val ForgingLoadRegex = """(-?\d*.?)(\d+)(\s*Tonnes\s*on\s*die\s*2)""".r
+  protected val ForgingLoadOnFirstDieRegex = """(-?\+?\d+.)(\d*E?\+?\-*\d+)(\s*Tonnes\s*on\s*die\s*1)""".r
+  protected val ForgingLoadOnSecondDieRegex = """(-?\+?\d+.)(\d*E?\+?\-*\d+)(\s*Tonnes\s*on\s*die\s*2)""".r
   protected val VirtualLoadRegex = """(virtual forging load\s*:\s*)(-?\+?\d+.)(\d*E?\+?\-*\d+)?""".r
   protected val HeightRegex = """(height\s*:\s*)(-?\+?\d+\.*)(\d*E?\+?\-*\d+)?""".r
+  protected val VelocityRegex = """(velocity\s*:\s*)(-?\+?\d+\.*)(\d*E?\+?\-*\d+)?""".r
+  protected val IncrementTimeRegex = """(increment time\s*:\s*)(-?\+?\d+\.*)(\d*E?\+?\-*\d+)?""".r
 
   //ERRORS
   protected val ReloadRegex = """The process cannot access""".r

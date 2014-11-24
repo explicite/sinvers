@@ -28,8 +28,7 @@ case class DON(file: File) {
 
   def updateHS(hsArgs: HSArgs): Unit = {
     this.hsArgs = hsArgs
-
-    val content = s".FICHIER\nFOUT = file.out\nFMAY = work.may\nDelete\n.FIN FICHIER\n.UNITES\nmm-mpa-mm.kg.s\n.FIN UNITES\n.INCREMENT\nCalage\n.FIN INCREMENT\n.RHEOLOGIE\n$hsArgs Coeff Poisson = 3.000000e-001\nModule Young = 2.000000e+008\nTemp Init = 1000.00000\nGravity\nInertie\nOutil 0: Coulomb,\nmu = 0.120000\n.FIN RHEOLOGIE\n.THERMIQUE\nMVolumique = 7.800000e-006\nCmassique = 7.000000e+008\nConductmat = 2.300000e+004\nOutil 0\nalphat = 2.000000e+003\ntempout = 1000.000000\neffusoutil = 1.176362e+004\nFace libre\nalphat = 1.000000e+001\ntempext = 1000.000000\nepsilon = 8.800000e-001\n.FIN THERMIQUE\n.PILOTAGE\nFile = pilotage.dat,\nhauteur actuelle = 12.001,\nhauteur finale = 7.522\n.FIN PILOTAGE\n.EXECUTION\nSans Visualisation\n.FIN EXECUTION"
+    val content = s".FICHIER\nFOUT = file.out\nFMAY = work.may\nDelete\n.FIN FICHIER\n.UNITES\nmm-mpa-mm.kg.s\n.FIN UNITES\n.INCREMENT\nCalage\n.FIN INCREMENT\n.RHEOLOGIE\n$hsArgs Coeff Poisson = 3.000000e-001\nModule Young = 2.000000e+008\nTemp Init = 1000.00000\nGravity\nInertie\nOutil 0: Coulomb,\nmu = 0.120000\n.FIN RHEOLOGIE\n.THERMIQUE\nMVolumique = 7.800000e-006\nCmassique = 7.000000e+008\nConductmat = 2.300000e+004\nOutil 0\nalphat = 2.000000e+003\ntempout = 1000.000000\neffusoutil = 1.176362e+004\nFace libre\nalphat = 1.000000e+001\ntempext = 1000.000000\nepsilon = 8.800000e-001\n.FIN THERMIQUE\n.PILOTAGE\nFile = pilotage.dat,\nhauteur actuelle = 12.00,\nhauteur finale = 7.522\n.FIN PILOTAGE\n.EXECUTION\nSans Visualisation\n.FIN EXECUTION"
     val writer = new PrintWriter(file)
     try {
       writer.write(content)
