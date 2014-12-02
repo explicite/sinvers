@@ -1,7 +1,7 @@
 package util
 
 import java.nio.ByteBuffer
-import java.util.{Random => JavaRandom}
+import java.util.{ Random => JavaRandom }
 
 import scala.util.hashing.MurmurHash3
 

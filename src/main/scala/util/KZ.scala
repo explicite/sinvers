@@ -1,7 +1,7 @@
 package util
 
 import scala.collection.mutable.ArrayBuffer
-import scala.concurrent.{duration, Await, Future}
+import scala.concurrent.{ duration, Await, Future }
 
 /**
  * Kolmogorov-Zurbenko low-pass linear filter.
@@ -27,7 +27,7 @@ object KZ {
     val ans: ArrayBuffer[Double] = ArrayBuffer.fill(x.length)(0.0)
 
     for (k <- 0 until k) {
-      val futures = (0 until x.length).map(i => Future{ans(i) = mavg1d(tmp, i, window)})
+      val futures = (0 until x.length).map(i => Future { ans(i) = mavg1d(tmp, i, window) })
       Await.result(Future.sequence(futures), duration.Duration.Inf)
       tmp = ans.clone()
     }

@@ -1,8 +1,8 @@
 package opt
 
-import scala.collection.mutable.{Seq => MutableSeq}
+import scala.collection.mutable.{ Seq => MutableSeq }
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{ Await, Future }
 import scala.math.abs
 import scalax.chart.module.Charting
 

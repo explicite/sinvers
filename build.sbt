@@ -14,10 +14,10 @@ libraryDependencies ++= Seq(
   "com.storm-enroute" %% "scalameter" % "0.6" % "test"
 )
 
-testFrameworks += new TestFramework(
-  "org.scalameter.ScalaMeterFramework")
+testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
 
 logBuffered := false
 
 parallelExecution in Test := false
 
+scalariformSettings

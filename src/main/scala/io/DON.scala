@@ -1,8 +1,8 @@
 package io
 
-import java.io.{File, PrintWriter}
+import java.io.{ File, PrintWriter }
 
-import reo.{CustomArgs, HSArgs}
+import reo.{ CustomArgs, HSArgs }
 
 case class DON(file: File) {
   def name = file.getName
@@ -24,7 +24,7 @@ case class DON(file: File) {
       0
     )
 
-  var customArgs  = CustomArgs(0.25, 0.1)
+  var customArgs = CustomArgs(0.25, 0.1)
 
   def updateHS(hsArgs: HSArgs): Unit = {
     this.hsArgs = hsArgs
@@ -32,7 +32,7 @@ case class DON(file: File) {
     val writer = new PrintWriter(file)
     try {
       writer.write(content)
-    }catch {
+    } catch {
       case e: Exception =>
         updateHS(hsArgs)
     }
@@ -47,7 +47,7 @@ case class DON(file: File) {
     val writer = new PrintWriter(file)
     try {
       writer.write(content)
-    }catch {
+    } catch {
       case e: Exception =>
         updateCustom(customArgs)
     }
@@ -73,24 +73,23 @@ case class DON(file: File) {
   }
 
   def rheology(hsArgs: HSArgs,
-               poisson: String = "3.000000e-001",
-               young: String = "2.000000e+008",
-               temInit: String = "1000.00000",
-               frictionLaw: String,
-               other: Seq[String] = Seq("Gravity", "Inerite")): String = {
+    poisson: String = "3.000000e-001",
+    young: String = "2.000000e+008",
+    temInit: String = "1000.00000",
+    frictionLaw: String,
+    other: Seq[String] = Seq("Gravity", "Inerite")): String = {
     s".RHEOLOGIE\n$hsArgs\nCoeff Poisson=$poisson\nModule Young=$young\nTemp Init=$temInit\n${other.mkString("\n")}$frictionLaw"
   }
 
-
   def thermal(partConditions: PartConditionsArgs,
-              partDieConditions: PartDieConditionsArgs,
-              partExternalConditions: PartExternalConditionsArgs): String = {
+    partDieConditions: PartDieConditionsArgs,
+    partExternalConditions: PartExternalConditionsArgs): String = {
     s".THERMIQUE\n$partConditions$partDieConditions$partExternalConditions.FIN THERMIQUE\n"
   }
 
   def pilotage(file: String = "pilotage.data",
-               min: String = "12.00001",
-               max: String = "7.522"): String = {
+    min: String = "12.00001",
+    max: String = "7.522"): String = {
     s".PILOTAGE\nFile=$file,\nhauteur actuelle=$min,\nhauteur finale=$max\n.FIN PILOTAGE\n"
   }
 
@@ -110,24 +109,24 @@ case class ColumbFrictionLawArgs(mu: String = "0.120000") {
 }
 
 case class PartConditionsArgs(densityRho: String = "7.800000e-006",
-                              heatCapacity: String = "7.000000e+008",
-                              conductivity: String = "2.300000e+004") {
+    heatCapacity: String = "7.000000e+008",
+    conductivity: String = "2.300000e+004") {
   override def toString: String = {
     s"MVolumique=$densityRho\nCmassique=$heatCapacity\nConductmat=$conductivity\n"
   }
 }
 
 case class PartDieConditionsArgs(transfer: String = "2.000000e+003",
-                                 temperature: String = "20.000000",
-                                 effusivity: String = "1.176362e+004") {
+    temperature: String = "20.000000",
+    effusivity: String = "1.176362e+004") {
   override def toString: String = {
     s"Outil 0\nalphat=$transfer\ntempout=$temperature\neffusoutil=$effusivity\n"
   }
 }
 
 case class PartExternalConditionsArgs(airCoefficient: String = "1.000000e+001",
-                                      airTemp: String = "20.000000",
-                                      emissivite: String = "8.800000e-001") {
+    airTemp: String = "20.000000",
+    emissivite: String = "8.800000e-001") {
   override def toString: String = {
     s"Face libre\nalphat=$airCoefficient\ntempext=$airTemp\nepsilon=$emissivite\n"
   }

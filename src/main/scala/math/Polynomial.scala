@@ -9,8 +9,9 @@ object Polynomial {
    */
   def apply(terms: Double*): Polynomial = {
     val withDegrees = terms.zipWithIndex.map(pair => (pair._1, pair._2))
-    val polys = withDegrees map { case (constant, degree) =>
-      new Polynomial(constant, degree)
+    val polys = withDegrees map {
+      case (constant, degree) =>
+        new Polynomial(constant, degree)
     }
     polys.reduceLeft { (aggregated, poly) =>
       aggregated.plus(poly)
@@ -18,11 +19,10 @@ object Polynomial {
   }
 }
 
-
 // a * x^b
 class Polynomial(a: Double, b: Int) {
   // coefficients
-  private val coef: Array[Double] = new Array(b+1)
+  private val coef: Array[Double] = new Array(b + 1)
   coef(b) = a
   // degree of polynomial (0 for the zero polynomial)
   private var deg = degree
@@ -61,7 +61,7 @@ class Polynomial(a: Double, b: Int) {
     for {
       i <- 0 to a.deg
       j <- 0 to b.deg
-    } c.coef(i+j) += (a.coef(i) * b.coef(j))
+    } c.coef(i + j) += (a.coef(i) * b.coef(j))
     c.deg = c.degree
     c
   }
@@ -90,7 +90,6 @@ class Polynomial(a: Double, b: Int) {
     true
   }
 
-
   // use Horner's method to compute and return the polynomial evaluated at x
   def evaluate(x: Double): Double = {
     var p = 0.0
@@ -113,18 +112,18 @@ class Polynomial(a: Double, b: Int) {
 
   // convert to string representation
   override def toString: String = {
-    if (deg ==  0) {
+    if (deg == 0) {
       "" + coef(0)
-    } else if (deg ==  1) {
+    } else if (deg == 1) {
       coef(1) + "x + " + coef(0)
     } else {
       var s: String = coef(deg) + "x^" + deg
-      for (i <- deg-1 to 0 by -1 if coef(i) == 0) {
+      for (i <- deg - 1 to 0 by -1 if coef(i) == 0) {
         //if      (coef(i) == 0) continue
-        if (coef(i)  > 0) s = s + " + " + ( coef(i))
-        else if (coef(i)  < 0) s = s + " - " + (-coef(i))
-        if      (i == 1) s = s + "x"
-        else if (i >  1) s = s + "x^" + i
+        if (coef(i) > 0) s = s + " + " + (coef(i))
+        else if (coef(i) < 0) s = s + " - " + (-coef(i))
+        if (i == 1) s = s + "x"
+        else if (i > 1) s = s + "x^" + i
       }
       s
     }

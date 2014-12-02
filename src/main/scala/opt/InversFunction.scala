@@ -1,14 +1,14 @@
 package opt
 
 import java.nio.file.StandardCopyOption.REPLACE_EXISTING
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{ Files, Path, Paths }
 import javax.swing.JFrame
 
 import data.DataFile
-import io.{DON, Forge}
+import io.{ DON, Forge }
 import math._
 import reo.HSArgs
-import util.{KZ, XORShiftRandom}
+import util.{ KZ, XORShiftRandom }
 
 import scalax.chart.module.Charting
 
@@ -34,7 +34,7 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile) extend
     val force = current.force
     val jaw = current.jaw //.map(12d + _)
 
-    val (filteredForce, filteredJaw) = force.zip(jaw).filter { case (f, j) => j >= interval.min && j <= interval.max}.groupBy(_._2).map(_._2.head).toSeq.sortBy(_._2).unzip
+    val (filteredForce, filteredJaw) = force.zip(jaw).filter { case (f, j) => j >= interval.min && j <= interval.max }.groupBy(_._2).map(_._2.head).toSeq.sortBy(_._2).unzip
     forceSeries.addSeries(filteredJaw.zip(filteredForce).toXYSeries("experiment"))
     val splineInterpolator = Interpolator.splineInterpolate(filteredJaw.toArray, filteredForce.toArray)
 
@@ -44,27 +44,23 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile) extend
     splineInterpolator
   }
 
-
   //return fitness for current context
   def fitness(args: Seq[Double]): Double = {
     val don = prepareFiles(random.randomAlpha(40))
 
-    val hsArgs = HSArgs(args(0), args(1), args(2), args(3), args(4))
-    //val hsArgs = HSArgs(args)
+    val hsArgs = HSArgs(args)
     don.updateHS(hsArgs)
 
-    /*    val customArgs = CustomArgs(args)
-        don.updateCustom(customArgs)*/
+    /*val customArgs = CustomArgs(args)
+      don.updateCustom(customArgs)*/
 
     val computed = forge process don
-    /*  val computedFile = new java.io.File("C:\\Users\\Jan\\Desktop\\sym\\computed.txt")
-      computed.save(computedFile)*/
 
     val fit = {
       val computedForce = computed.force //.map(_ * 1016.0469053138122)
 
       val computedFitness = computed.fit(interpolator, interval)
-      //if (computedFitness < 0.001)
+      if (computedFitness < 0.00001)
         forceSeries.addSeries(computed.jaw.zip(computedForce).toXYSeries(s"cf:$computedFitness"))
 
       computedFitness
@@ -74,7 +70,6 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile) extend
 
     fit
   }
-
 
   private def prepareFiles(hash: String): DON = {
     def fileCopy(path: Path)(directory: (String) => String): Unit = {
@@ -106,6 +101,5 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile) extend
 
     don
   }
-
 
 }

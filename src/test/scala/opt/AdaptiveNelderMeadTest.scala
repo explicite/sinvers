@@ -25,23 +25,23 @@ class AdaptiveNelderMeadTest extends BaseTest {
     SphereFunction(nelderMead.minimize(point, ε)) should equal(min +- ε)
   }
 
-  ignore must "find min for Beale's function" in {
+  it must "find min for Beale's function" in {
     val ε = 0.001
     val min = BealesFunction(Seq(3d, 0.5))
     val nelderMead = AdaptiveNelderMead(BealesFunction)
-    val point = Seq(-4.5, 1d)
+    val point = Seq(2.8d, 0.3d)
     BealesFunction(nelderMead.minimize(point, ε)) should equal(min +- ε)
   }
 
-  ignore must "find min for Rastrigin function" in {
+  it must "find min for Rastrigin function" in {
     val ε = 0.001
     val min = RastriginFunction(Seq.fill(dim)(0d))
     val nelderMead = AdaptiveNelderMead(RastriginFunction)
-    val point =Seq(1d, -1d)
+    val point =Seq(-1d, 1d)
     RastriginFunction(nelderMead.minimize(point, ε)) should equal(min +- ε)
   }
 
-  ignore must "find min for Eosom function" in {
+  it must "find min for Eosom function" in {
     val ε = 0.001
     val min = EasomFunction(Seq(Pi, Pi))
     val nelderMead = AdaptiveNelderMead(EasomFunction)
@@ -49,7 +49,7 @@ class AdaptiveNelderMeadTest extends BaseTest {
     EasomFunction(nelderMead.minimize(point, ε)) should equal(min +- ε)
   }
 
-  ignore must "find min for McCormick function" in {
+  it must "find min for McCormick function" in {
     val ε = 0.001
     val min = McCormicFunction(Seq(-0.54719, -1.54719))
     val nelderMead = AdaptiveNelderMead(McCormicFunction)
@@ -57,7 +57,7 @@ class AdaptiveNelderMeadTest extends BaseTest {
     McCormicFunction(nelderMead.minimize(point, ε)) should equal(min +- ε)
   }
 
-  ignore must "find min for Booth function" in {
+  it must "find min for Booth function" in {
     val ε = 0.001
     val min = BoothFunction(Seq(1, 3))
     val nelderMead = AdaptiveNelderMead(BoothFunction)
@@ -67,9 +67,9 @@ class AdaptiveNelderMeadTest extends BaseTest {
 
   ignore must "find min for Bukin function" in {
     val ε = 0.001
-    val min = BukinFunction(Seq(-10, 1))
+    val min = BukinFunction(Seq(-10.001, 0.99))
     val nelderMead = AdaptiveNelderMead(BukinFunction)
-    val point = Seq(-5d, 2d)
+    val point = Seq(-10d, 1d)
     BukinFunction(nelderMead.minimize(point, ε)) should equal(min +- ε)
   }
 

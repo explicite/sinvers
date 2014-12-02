@@ -22,16 +22,16 @@ import scala.io.Source
  * @param epsSs
  */
 case class HSArgs(a1: Double = 0,
-                  m1: Double = 0,
-                  m2: Double = 0,
-                  m3: Double = 0,
-                  m4: Double = 0,
-                  m5: Double = 0,
-                  m6: Double = 0,
-                  m7: Double = 0,
-                  m8: Double = 0,
-                  m9: Double = 0,
-                  epsSs: Double = 0) {
+    m1: Double = 0,
+    m2: Double = 0,
+    m3: Double = 0,
+    m4: Double = 0,
+    m5: Double = 0,
+    m6: Double = 0,
+    m7: Double = 0,
+    m8: Double = 0,
+    m9: Double = 0,
+    epsSs: Double = 0) {
 
   def formatter(d: Double): String = new java.text.DecimalFormat("0.##############E0").format(d)
 
@@ -42,16 +42,32 @@ case class HSArgs(a1: Double = 0,
 
 object HSArgs {
   def apply(args: Seq[Double]): HSArgs = {
-    assert(args.size == 11, "not satisfied numbers of arguments")
-    HSArgs(args(0), args(1), args(2), args(3), args(4), args(5), args(6), args(7), args(8), args(9), args(10))
+    args match {
+      case a1 :: m1 :: m2 :: m3 :: m4 :: Nil => HSArgs(a1, m1, m2, m3, m4, 0d, 0d, 0d, 0d, 0d, 0d)
+      case sx: Seq[Double] if sx.size == 11 => HSArgs(args(0), args(1), args(2), args(3), args(4), args(5), args(6), args(7), args(8), args(9), args(10))
+      case _ => throw new Exception("not satisfied numbers of arguments")
+    }
   }
 
   def apply(a1: Double,
-            m1: Double,
-            m2: Double,
-            m3: Double,
-            m4: Double): HSArgs = {
+    m1: Double,
+    m2: Double,
+    m3: Double,
+    m4: Double): HSArgs = {
     HSArgs(a1, m1, m2, m3, m4, 0d, 0d, 0d, 0d, 0d, 0d)
+  }
+
+  def apply(a1: Double,
+    m1: Double,
+    m2: Double,
+    m3: Double,
+    m4: Double,
+    m5: Double,
+    m6: Double,
+    m7: Double,
+    m8: Double,
+    m9: Double): HSArgs = {
+    HSArgs(a1, m1, m2, m3, m4, m5, m6, m7, m8, m9, 0d)
   }
 }
 

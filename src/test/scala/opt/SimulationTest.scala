@@ -35,7 +35,7 @@ class SimulationTest  extends BaseTest {
 
     println(min)
 
-    min._1 should not be empty
+    min should not be empty
   }
 
 }

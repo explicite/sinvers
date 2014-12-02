@@ -10,7 +10,7 @@ class DimensionMismatchException(xLen: Int, yLen: Int) extends Exception
 object Interpolator {
   type Real = Double
 
-  def splineInterpolate(x: Array[Real],y: Array[Real]): PolynomialSplineFunction = {
+  def splineInterpolate(x: Array[Real], y: Array[Real]): PolynomialSplineFunction = {
 
     if (x.length != y.length)
       throw new DimensionMismatchException(x.length, y.length)
@@ -22,16 +22,16 @@ object Interpolator {
     val n = x.length - 1
 
     // Differences between knot points
-    val h = Array.tabulate(n)(i => x(i+1) - x(i))
+    val h = Array.tabulate(n)(i => x(i + 1) - x(i))
 
     val mu: Array[Real] = Array.fill(n)(0)
     val z: Array[Real] = Array.fill(n + 1)(0)
     var i = 1
     while (i < n) {
-      val g = 2.0 * (x(i+1) - x(i-1)) - h(i-1) * mu(i-1)
+      val g = 2.0 * (x(i + 1) - x(i - 1)) - h(i - 1) * mu(i - 1)
       mu(i) = h(i) / g
-      z(i) = (3.0 * (y(i+1) * h(i-1) - y(i) * (x(i+1) - x(i-1))+ y(i-1) * h(i)) /
-        (h(i-1) * h(i)) - h(i-1) * z(i-1)) / g
+      z(i) = (3.0 * (y(i + 1) * h(i - 1) - y(i) * (x(i + 1) - x(i - 1)) + y(i - 1) * h(i)) /
+        (h(i - 1) * h(i)) - h(i - 1) * z(i - 1)) / g
       i += 1
     }
 
@@ -40,11 +40,11 @@ object Interpolator {
     val c: Array[Real] = Array.fill(n + 1)(0)
     val d: Array[Real] = Array.fill(n)(0)
 
-    var j = n-1
+    var j = n - 1
     while (j >= 0) {
       c(j) = z(j) - mu(j) * c(j + 1)
-      b(j) = (y(j+1) - y(j)) / h(j) - h(j) * (c(j+1) + 2.0 * c(j)) / 3.0
-      d(j) = (c(j+1) - c(j)) / (3.0 * h(j))
+      b(j) = (y(j + 1) - y(j)) / h(j) - h(j) * (c(j + 1) + 2.0 * c(j)) / 3.0
+      d(j) = (c(j + 1) - c(j)) / (3.0 * h(j))
       j -= 1
     }
 

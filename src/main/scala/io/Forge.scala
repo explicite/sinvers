@@ -7,10 +7,10 @@ import data.Data
 import regex.Parser
 import util.FileManipulator
 
-//import scala.concurrent.ExecutionContext.Implicits.global
-import io.ExecutionContext.context
+import scala.concurrent.ExecutionContext.Implicits.global
+//import io.ExecutionContext.context
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{ Await, Future }
 import scala.sys.process._
 
 case class Forge(xf2Dir: String) extends Parser {
@@ -28,10 +28,9 @@ case class Forge(xf2Dir: String) extends Parser {
     compute(process)(don)
   }
 
-
   def fallback[F](function: => F)(to: Duration, default: F, onTheEnd: () => Unit): F = {
     try {
-      Await.result(Future { function } , to)
+      Await.result(Future { function }, to)
     } catch {
       case t: Throwable => default
     } finally {
@@ -108,7 +107,6 @@ case class Forge(xf2Dir: String) extends Parser {
       Data(time, load, height, velocity)
     }(15 minutes, Data.empty, onTheEnd)
   }
-
 
   private def cleanUp(file: java.io.File): Unit = {
     try {

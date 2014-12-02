@@ -15,7 +15,7 @@ case class PolynomialSplineFunction(knots: Array[Double], polynomials: Seq[Polyn
     // This will handle the case where x is the last knot value
     // There are only n-1 polynomials, so if x is the last knot
     // then we will use the last polynomial to calculate the value.
-    if ( i >= polynomials.length ) {
+    if (i >= polynomials.length) {
       i -= 1
     }
     polynomials(i).evaluate(x - knots(i))

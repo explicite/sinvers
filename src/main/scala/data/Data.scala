@@ -8,9 +8,9 @@ import opt.Interval
 import scala.io.Source
 
 case class Data(time: Seq[Double],
-                force: Seq[Double],
-                jaw: Seq[Double],
-                velocity: Seq[Double]) {
+    force: Seq[Double],
+    jaw: Seq[Double],
+    velocity: Seq[Double]) {
   private val KGF = 1016.0469053138122
   val size = {
     if (force.size != jaw.size) throw new Exception("Data length for force and displacement are not equal!")
@@ -22,29 +22,39 @@ case class Data(time: Seq[Double],
 
   def fit(interpolator: PolynomialSplineFunction, interval: Interval): Double = {
     if (valid(interval)) {
+      val (forceToInter, jawToInter) = sections(force.zip(jaw), 10).unzip
       val computedForce = force //.map(_ * KGF)
-      val interpolatedForce = jaw.map(interpolator(_))
-      computedForce.zip(interpolatedForce).map { case (c, ii) => scala.math.sqrt((c - ii) * (c - ii))}.sum / computedForce.size
+      val interpolatedForce = jawToInter.map(interpolator(_))
+      forceToInter.zip(interpolatedForce).map { case (c, ii) => scala.math.sqrt((c - ii) * (c - ii)) }.sum / forceToInter.size
     } else {
       Double.MaxValue
     }
   }
 
+  def sections(sx: Seq[(Double, Double)], slices: Int): List[(Double, Double)] = {
+    val (_, jaw) = sx.unzip
+    val min = jaw.min
+    val max = jaw.max
+    val span = (max - min) / slices
+    val splits = List.iterate(min, slices)(_ + span) :+ max
+    splits.map {
+      s =>
+        sx.find { case (f, j) => j < s + span && j > s - span }
+    }.flatten.distinct
+  }
+
   def save(file: File): Unit = {
     def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
       val p = new java.io.PrintWriter(f)
-      try {
-        op(p)
-      } finally {
-        p.close()
-      }
+      try op(p) finally p.close()
     }
 
     printToFile(file) {
       printWriter =>
-        val toPrint = ((time zip force zip jaw zip velocity) map { case (((t, f), j), v) => (t, f, j, v)}).reverse.map {
-          case (t, f, j, v) =>
-            s"$t $f $j $v 0.0 0.0 0.0 0.0 0.0"
+        val toPrint = ((time zip force zip jaw zip velocity) map {
+          case (((t, f), j), v) => (t, f, j, v)
+        }).reverse.map {
+          case (t, f, j, v) => s"$t $f $j $v 0.0 0.0 0.0 0.0 0.0"
         }
         toPrint.foreach(printWriter.println)
     }
@@ -93,5 +103,4 @@ object Data {
 case class DataFile(file: File) {
   def current = Data(file)
 }
-
 
