@@ -1,7 +1,7 @@
 package io
 
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Minutes, Seconds, Span}
+import org.scalatest.time.{ Minutes, Seconds, Span }
 import test.BaseTest
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -16,7 +16,9 @@ class ForgeTest extends BaseTest with ScalaFutures {
   implicit val defaultPatience =
     PatienceConfig(timeout = Span(20, Minutes), interval = Span(1, Seconds))
 
-/*  it should "run forge process" in whenReady(forge process don) { result =>
+  /*
+  it should "run forge process" in whenReady(forge process don) { result =>
     result.force should not be empty
-  }   */
+  }
+  */
 }

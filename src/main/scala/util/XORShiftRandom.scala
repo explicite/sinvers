@@ -25,22 +25,10 @@ class XORShiftRandom(init: Long) extends JavaRandom(init) {
     seed = XORShiftRandom.hashSeed(s)
   }
 
-  def randomAlpha(length: Int): String = {
-    val chars = ('a' to 'z') ++ ('A' to 'Z')
-    randomStringFromCharList(length, chars)
-  }
-
-  def randomStringFromCharList(length: Int, chars: Seq[Char]): String = {
-    val sb = new StringBuilder
-    for (i <- 1 to length) {
-      val randomNum = nextInt(chars.length)
-      sb.append(chars(randomNum))
-    }
-    sb.toString()
-  }
 }
 
 private object XORShiftRandom {
+
   private def hashSeed(seed: Long): Long = {
     val bytes = ByteBuffer.allocate(java.lang.Long.SIZE).putLong(seed).array()
     MurmurHash3.bytesHash(bytes)

@@ -1,56 +1,57 @@
 package opt
 
-import scala.collection.mutable.{ Seq => MutableSeq }
+import scala.collection.mutable.{Seq => MutableSeq}
 import scala.concurrent.duration._
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.{Await, Future}
 import scala.math.abs
 import scalax.chart.module.Charting
 
-case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, b: Seq[T]) extends Charting {
+case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, bounds: Seq[T]) {
 
   import io.ExecutionContext.context
 
-  val dim = b.length
+  val dimX = bounds.length
   val random = new java.security.SecureRandom()
 
   /**
    * Find minimum
    *
-   * @param a number of search actors
-   * @param i number of iterations
+   * @param actors number of search actors
+   * @param iteratons number of iterations
    *
    * @return minimum (best position)
    */
-  def min(a: Int, i: Int): Seq[Double] = optimize(a, i)(MIN)
+  def min(actors: Int, iteratons: Int): Seq[Double] = optimize(actors, iteratons)(MIN)
 
   /**
    * Find maximum
    *
-   * @param a number of search actors
-   * @param i number of iterations
+   * @param actors number of search actors
+   * @param iterations number of iterations
    *
    * @return optimum (best position)
    */
-  def max(a: Int, i: Int): Seq[Double] = optimize(a, i)(MAX)
+  def max(actors: Int, iterations: Int): Seq[Double] = optimize(actors, iterations)(MAX)
 
   private def optimize(numberOfActors: Int, iterations: Int)(opt: Optimum): Seq[Double] = {
-    val alphaSeries = Seq[(Double, Double)]() toXYSeries "alpha"
+    //val alphaSeries = Seq[(Double, Double)]() toXYSeries "alpha"
 
-    val chart = XYLineChart(alphaSeries)
-    chart.show()
-    var alphaPos: Seq[Double] = Seq.fill(dim)(0d)
+    //val chart = XYLineChart(alphaSeries)
+    //chart.show()
+    val dimY = numberOfActors
+    var alphaPos: Seq[Double] = Seq.fill(dimX)(0d)
     var alphaScore: Double = opt.inf
-    var betaPos: Seq[Double] = Seq.fill(dim)(0d)
+    var betaPos: Seq[Double] = Seq.fill(dimX)(0d)
     var betaScore: Double = opt.inf
-    var deltaPos: Seq[Double] = Seq.fill(dim)(0d)
+    var deltaPos: Seq[Double] = Seq.fill(dimX)(0d)
     var deltaScore: Double = opt.inf
 
     val positions: MutableSeq[MutableSeq[Double]] = {
-      val positions: MutableSeq[MutableSeq[Double]] = MutableSeq.fill(numberOfActors)(MutableSeq.fill(dim)(0.0))
+      val positions: MutableSeq[MutableSeq[Double]] = MutableSeq.fill(dimY)(MutableSeq.fill(dimX)(0.0))
 
       positions.foreach(position => {
-        for (dim <- 0 until dim) {
-          position(dim) = b(dim).next
+        for (dim <- 0 until dimX) {
+          position(dim) = bounds(dim).next
         }
       })
 
@@ -61,7 +62,7 @@ case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, b: Seq[T
     var iteration: Int = 0
     def reorganize(position: Int) {
       //Return back the search agents that go beyond the boundaries of the search space
-      positions(position) = backToSpace(positions(position))
+      positions(position) = backToSpace(positions(position)) //TODO -> mut
 
       // Calculate objective function for each search actors
       val fitness: Double = f(positions(position))
@@ -69,18 +70,18 @@ case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, b: Seq[T
       scala.concurrent.blocking {
         // Update Alpha, Beta, and Delta
         if (fitness < alphaScore) {
-          alphaScore = fitness
-          alphaPos = positions(position).clone()
+          alphaScore = fitness //TODO -> mut
+          alphaPos = positions(position).clone() //TODO -> mut
         }
 
         if (fitness > alphaScore && fitness < betaScore) {
-          betaScore = fitness
-          betaPos = positions(position).clone()
+          betaScore = fitness //TODO -> mut
+          betaPos = positions(position).clone() //TODO -> mut
         }
 
         if (fitness > alphaScore && fitness > betaScore && fitness < deltaScore) {
-          deltaScore = fitness
-          deltaPos = positions(position).clone()
+          deltaScore = fitness //TODO -> mut
+          deltaPos = positions(position).clone() //TODO -> mut
         }
       }
     }
@@ -112,29 +113,48 @@ case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, b: Seq[T
           val dDelta = abs(cDelta.y * deltaPos(j) - positions(i)(j))
           val x3 = deltaPos(j) - cDelta.x * dDelta
 
-          positions(i)(j) = (x1 + x2 + x3) / 3d
-          j += 1
+          positions(i)(j) = (x1 + x2 + x3) / 3d //TODO -> mut
+          j += 1 //TODO -> mut
         }
-        i += 1
+        i += 1 //TODO -> mut
       }
 
       //TODO add chart
-      alphaSeries.add(iteration, alphaScore)
+      //alphaSeries.add(iteration, alphaScore)
 
-      iteration += 1
+      iteration += 1 //TODO -> mut
     }
 
     alphaPos
   }
 
   private def backToSpace(p: MutableSeq[Double]): MutableSeq[Double] = {
-    p.zip(b).map(ab => if (ab._1 > ab._2.max || ab._1 < ab._2.min) ab._2.next else ab._1)
+    p.zip(bounds).map(ab => if (ab._1 > ab._2.max || ab._1 < ab._2.min) ab._2.next else ab._1)
   }
+
+  private def coordinates(dimX: Int, index: Int): (Int, Int) = (index % dimX, index / dimX)
 
   case class Coefficient(x: Double, y: Double)
 
   object Coefficient {
     def apply(i: Double): Coefficient = Coefficient(2d * i * random.nextDouble() - 1d, 2d * random.nextDouble())
   }
+
+
+  def rebirth(positions: List[Double]) : List[Double] = {
+    positions.grouped(dimX).map { position =>
+        position.zip(bounds).map{ case (value, interval) =>
+            if (value > interval.max || value < interval.min) interval.next else value
+        }
+    }.flatten.toList
+  }
+
+  case class Context(alphaPos: List[Double],
+                     alphaScore: Double,
+                     betaPos: List[Double],
+                     betaScore: Double,
+                     deltaPos: List[Double],
+                     deltaScore: Double,
+                     positions: List[Double])
 
 }

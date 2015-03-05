@@ -30,7 +30,7 @@ class Polynomial(a: Double, b: Int) {
   // return the degree of this polynomial (0 for the zero polynomial)
   def degree: Int = {
     var d = 0
-    for (i <- 0 until coef.length if (coef(i) != 0)) d = i
+    for (i <- 0 until coef.length if coef(i) != 0) d = i
     d
   }
 
@@ -119,8 +119,7 @@ class Polynomial(a: Double, b: Int) {
     } else {
       var s: String = coef(deg) + "x^" + deg
       for (i <- deg - 1 to 0 by -1 if coef(i) == 0) {
-        //if      (coef(i) == 0) continue
-        if (coef(i) > 0) s = s + " + " + (coef(i))
+        if (coef(i) > 0) s = s + " + " + coef(i)
         else if (coef(i) < 0) s = s + " - " + (-coef(i))
         if (i == 1) s = s + "x"
         else if (i > 1) s = s + "x^" + i

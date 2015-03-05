@@ -2,7 +2,7 @@ package io
 
 import java.io.File
 
-import reo.{HanselSpittel, HSArgs}
+import reo.{ HanselSpittel, HSArgs }
 import test.BaseTest
 import util.XORShiftRandom
 

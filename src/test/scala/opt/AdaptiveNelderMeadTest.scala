@@ -37,7 +37,7 @@ class AdaptiveNelderMeadTest extends BaseTest {
     val ε = 0.001
     val min = RastriginFunction(Seq.fill(dim)(0d))
     val nelderMead = AdaptiveNelderMead(RastriginFunction)
-    val point =Seq(-1d, 1d)
+    val point = Seq(-1d, 1d)
     RastriginFunction(nelderMead.minimize(point, ε)) should equal(min +- ε)
   }
 

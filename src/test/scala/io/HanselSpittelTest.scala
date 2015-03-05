@@ -2,7 +2,7 @@ package io
 
 import java.io.File
 
-import reo.{HSArgs, HanselSpittel}
+import reo.{ HSArgs, HanselSpittel }
 import test.BaseTest
 
 class HanselSpittelTest extends BaseTest {

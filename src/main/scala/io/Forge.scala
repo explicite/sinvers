@@ -105,7 +105,7 @@ case class Forge(xf2Dir: String) extends Parser {
       current = process.run(io)
       current.exitValue()
       Data(time, load, height, velocity)
-    }(15 minutes, Data.empty, onTheEnd)
+    }(20 seconds, Data.empty, onTheEnd)
   }
 
   private def cleanUp(file: java.io.File): Unit = {

@@ -9,6 +9,7 @@ trait Application {
   val process = Forge(fx2Dir)
 
   val experimentDirectory = "C:\\Users\\Jan\\Desktop\\computed.txt"
+  //val experimentDirectory = "C:\\Users\\Jan\\Desktop\\mgr\\HA000490.D01"
   val don = DON(new java.io.File(s"$workingDirectory\\newSym.don"))
   val experimentData = DataFile(new java.io.File(experimentDirectory))
   val function = InversFunction(process, don, experimentData)

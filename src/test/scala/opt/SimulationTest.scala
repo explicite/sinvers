@@ -1,10 +1,10 @@
 package opt
 
 import data.DataFile
-import io.{DON, Forge}
+import io.{ DON, Forge }
 import test.BaseTest
 
-class SimulationTest  extends BaseTest {
+class SimulationTest extends BaseTest {
   behavior of "application"
 
   it should "optimize" in {

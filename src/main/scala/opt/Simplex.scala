@@ -9,7 +9,7 @@ case class Simplex(points: Seq[Seq[Double]])(implicit context: EvaluationContext
   val max = points(values.indexOf(values.max))
 
   def transform = Simplex {
-    val cog = points.filter(_ != max).foldLeft(Seq.fill(points.head.size)(0d))((re, ce) => re.zip(ce) map { case (l, r) => l + r }) map (_ / (points.size - 1))
+    val cog = points.filter(_ != max).reduceLeft((re, ce) => re.zip(ce) map { case (l, r) => l + r }) map (_ / (points.size - 1))
     val reflection = cog.zip(cog.zip(max) map { case (l, r) => (l - r) * α }) map { case (l, r) => l + r }
     if (function(min) <= function(reflection) && function(reflection) < function(max)) {
       points map { point => if (point == max) reflection else point }
@@ -28,6 +28,6 @@ case class Simplex(points: Seq[Seq[Double]])(implicit context: EvaluationContext
     }
   }
 
-  def transformable(ε: Double): Boolean = !points.filter(_ != min).forall(point => scala.math.sqrt(point.zip(min).map { case (l, r) => (l - r) * (l - r) }.sum) < ε)
+  def transformable(ε: Double): Boolean = !points.filterNot(_ == min).forall(point => scala.math.sqrt(point.zip(min).map { case (l, r) => (l - r) * (l - r) }.sum) < ε)
 
 }
