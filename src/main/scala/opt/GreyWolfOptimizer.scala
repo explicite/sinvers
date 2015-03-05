@@ -1,14 +1,9 @@
 package opt
 
-import scala.collection.mutable.{Seq => MutableSeq}
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
 import scala.math.abs
 import scalax.chart.module.Charting
 
 case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, bounds: Seq[T]) {
-
-  import io.ExecutionContext.context
 
   val dimX = bounds.length
   val random = new java.security.SecureRandom()
@@ -39,122 +34,89 @@ case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, bounds: 
     //val chart = XYLineChart(alphaSeries)
     //chart.show()
     val dimY = numberOfActors
-    var alphaPos: Seq[Double] = Seq.fill(dimX)(0d)
-    var alphaScore: Double = opt.inf
-    var betaPos: Seq[Double] = Seq.fill(dimX)(0d)
-    var betaScore: Double = opt.inf
-    var deltaPos: Seq[Double] = Seq.fill(dimX)(0d)
-    var deltaScore: Double = opt.inf
 
-    val positions: MutableSeq[MutableSeq[Double]] = {
-      val positions: MutableSeq[MutableSeq[Double]] = MutableSeq.fill(dimY)(MutableSeq.fill(dimX)(0.0))
+    val alpha = Wolf(List.fill(dimX)(0d), opt.inf)
+    val beta = Wolf(List.fill(dimX)(0d), opt.inf)
+    val delta = Wolf(List.fill(dimX)(0d), opt.inf)
 
-      positions.foreach(position => {
-        for (dim <- 0 until dimX) {
-          position(dim) = bounds(dim).next
-        }
-      })
+    val positions: List[Double] = List.fill(dimX * dimY)(0d).zipWithIndex.map { case (_, index) => bounds(index % dimX).next}
 
-      positions
+    def step(iteration: Int)(context: Context): Context = {
+      if (iteration < iterations) step(iteration + 1)(context.evolution(2d - iteration * (2d / iterations))) else context
     }
 
-    // Main loop
-    var iteration: Int = 0
-    def reorganize(position: Int) {
-      //Return back the search agents that go beyond the boundaries of the search space
-      positions(position) = backToSpace(positions(position)) //TODO -> mut
-
-      // Calculate objective function for each search actors
-      val fitness: Double = f(positions(position))
-
-      scala.concurrent.blocking {
-        // Update Alpha, Beta, and Delta
-        if (fitness < alphaScore) {
-          alphaScore = fitness //TODO -> mut
-          alphaPos = positions(position).clone() //TODO -> mut
-        }
-
-        if (fitness > alphaScore && fitness < betaScore) {
-          betaScore = fitness //TODO -> mut
-          betaPos = positions(position).clone() //TODO -> mut
-        }
-
-        if (fitness > alphaScore && fitness > betaScore && fitness < deltaScore) {
-          deltaScore = fitness //TODO -> mut
-          deltaPos = positions(position).clone() //TODO -> mut
-        }
-      }
-    }
-
-    while (iteration < iterations) {
-      val futures = positions.zipWithIndex.map {
-        case (_, index) => Future {
-          reorganize(index)
-        }
-      }
-
-      Await.result(Future.sequence(futures), Duration.Inf)
-
-      val a: Double = 2d - iteration * (2d / iterations)
-
-      var i: Int = 0
-      while (i < positions.length) {
-        var j: Int = 0
-        while (j < positions(i).length) {
-          val cAlpha = Coefficient(a)
-          val dAlpha = abs(cAlpha.y * alphaPos(j) - positions(i)(j))
-          val x1 = alphaPos(j) - cAlpha.x * dAlpha
-
-          val cBeta = Coefficient(a)
-          val dBeta = abs(cBeta.y * betaPos(j) - positions(i)(j))
-          val x2 = betaPos(j) - cBeta.x * dBeta
-
-          val cDelta = Coefficient(a)
-          val dDelta = abs(cDelta.y * deltaPos(j) - positions(i)(j))
-          val x3 = deltaPos(j) - cDelta.x * dDelta
-
-          positions(i)(j) = (x1 + x2 + x3) / 3d //TODO -> mut
-          j += 1 //TODO -> mut
-        }
-        i += 1 //TODO -> mut
-      }
-
-      //TODO add chart
-      //alphaSeries.add(iteration, alphaScore)
-
-      iteration += 1 //TODO -> mut
-    }
-
-    alphaPos
+    step(0)(Context(alpha, beta, delta, positions)).alphaOrg.pos
   }
 
-  private def backToSpace(p: MutableSeq[Double]): MutableSeq[Double] = {
-    p.zip(bounds).map(ab => if (ab._1 > ab._2.max || ab._1 < ab._2.min) ab._2.next else ab._1)
+
+
+  case class Wolf(pos: List[Double], score: Double) extends Ordered[Wolf] {
+    def compare(that: Wolf): Int = this.score compare that.score
   }
 
-  private def coordinates(dimX: Int, index: Int): (Int, Int) = (index % dimX, index / dimX)
+  case class Context(alphaOrg: Wolf,
+                     betaOrg: Wolf,
+                     deltaOrg: Wolf,
+                     positions: List[Double]) {
+
+    def evolution(a: Double): Context = {
+      val evaluated = evaluate
+      evaluated.copy(
+        positions = positions.zipWithIndex.map {
+          case (value, index) =>
+            val x = index % dimX
+            val cAlpha = Coefficient(a)
+            val dAlpha = abs(cAlpha.y * evaluated.alphaOrg.pos(x) - value)
+            val x1 = evaluated.alphaOrg.pos(x) - cAlpha.x * dAlpha
+
+            val cBeta = Coefficient(a)
+            val dBeta = abs(cBeta.y * evaluated.betaOrg.pos(x) - value)
+            val x2 = evaluated.betaOrg.pos(x) - cBeta.x * dBeta
+
+            val cDelta = Coefficient(a)
+            val dDelta = abs(cDelta.y * evaluated.deltaOrg.pos(x) - value)
+            val x3 = evaluated.deltaOrg.pos(x) - cDelta.x * dDelta
+
+            (x1 + x2 + x3) / 3d
+        }
+      )
+    }
+
+    private def rebirth(positions: List[Double]): List[Double] = {
+      positions.zipWithIndex.map {
+        case (value, index) =>
+          val interval = bounds(index % dimX)
+          if (value > interval.max || value < interval.min) interval.next else value
+      }
+    }
+
+    private def evaluate: Context = {
+      val evaluated = rebirth(positions).grouped(dimX).toParArray.map {
+        position => (position, f(position))
+      }.toList
+      val propositions = evaluated.sortBy(_._2).take(3).map { case (position, value) => Wolf(position, value)}
+
+      def reg(Alpha: Wolf,
+              Beta: Wolf,
+              Delta: Wolf)(propositions: List[Wolf]): Context = {
+        propositions match {
+          case head :: tail =>
+            val alpha = if (head < alphaOrg) head else Alpha
+            val beta = if (head > alpha && head < betaOrg) head else Beta
+            val delta = if (head > alpha && head > beta && head < deltaOrg) head else Delta
+            reg(alpha, beta, delta)(tail)
+          case _ => Context(Alpha, Beta, Delta, evaluated.map(_._1).flatten)
+        }
+      }
+      reg(alphaOrg, betaOrg, deltaOrg)(propositions)
+    }
+
+  }
 
   case class Coefficient(x: Double, y: Double)
 
   object Coefficient {
     def apply(i: Double): Coefficient = Coefficient(2d * i * random.nextDouble() - 1d, 2d * random.nextDouble())
   }
-
-
-  def rebirth(positions: List[Double]) : List[Double] = {
-    positions.grouped(dimX).map { position =>
-        position.zip(bounds).map{ case (value, interval) =>
-            if (value > interval.max || value < interval.min) interval.next else value
-        }
-    }.flatten.toList
-  }
-
-  case class Context(alphaPos: List[Double],
-                     alphaScore: Double,
-                     betaPos: List[Double],
-                     betaScore: Double,
-                     deltaPos: List[Double],
-                     deltaScore: Double,
-                     positions: List[Double])
 
 }

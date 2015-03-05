@@ -7,8 +7,7 @@ import data.Data
 import regex.Parser
 import util.FileManipulator
 
-import scala.concurrent.ExecutionContext.Implicits.global
-//import io.ExecutionContext.context
+import io.ExecutionContext.context
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
 import scala.sys.process._

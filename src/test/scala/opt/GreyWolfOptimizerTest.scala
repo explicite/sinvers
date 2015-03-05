@@ -28,7 +28,7 @@ class GreyWolfOptimizerTest extends BaseTest {
   it must "find min for Beale's function over [-4.5, 4.5]" in {
     val min = BealesFunction(Seq(3d, 0.5))
     val gwo = new GreyWolfOptimizer(BealesFunction, Seq(StaticInterval(-4.5, 4.5), StaticInterval(-4.5, 4.5)))
-    BealesFunction(gwo.min(wolfs, iterations)) should equal(min +- ε)
+    BealesFunction(gwo.min(wolfs * dim, iterations)) should equal(min +- ε)
   }
 
   it must "find min for Rastrigin function over [-5.12, 5.12]" in {
@@ -40,7 +40,7 @@ class GreyWolfOptimizerTest extends BaseTest {
   it must "find min for Eosom function over [-100, 100]" in {
     val min = EasomFunction(Seq(Pi, Pi))
     val gwo = new GreyWolfOptimizer(EasomFunction, Seq(StaticInterval(-100d, 100d), StaticInterval(-100d, 100d)))
-    EasomFunction(gwo.min(wolfs, iterations * dim)) should equal(min +- ε)
+    EasomFunction(gwo.min(wolfs * dim, iterations * dim)) should equal(min +- ε)
   }
 
   it must "find min for McCormick function over [-1.5, 4] [-3, 4]" in {
