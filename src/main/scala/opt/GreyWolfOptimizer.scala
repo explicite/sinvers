@@ -1,7 +1,6 @@
 package opt
 
 import scala.math.abs
-import scalax.chart.module.Charting
 
 case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, bounds: Seq[T]) {
 
@@ -12,11 +11,11 @@ case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, bounds: 
    * Find minimum
    *
    * @param actors number of search actors
-   * @param iteratons number of iterations
+   * @param iterations number of iterations
    *
    * @return minimum (best position)
    */
-  def min(actors: Int, iteratons: Int): Seq[Double] = optimize(actors, iteratons)(MIN)
+  def min(actors: Int, iterations: Int): Seq[Double] = optimize(actors, iterations)(MIN)
 
   /**
    * Find maximum
@@ -29,17 +28,13 @@ case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, bounds: 
   def max(actors: Int, iterations: Int): Seq[Double] = optimize(actors, iterations)(MAX)
 
   private def optimize(numberOfActors: Int, iterations: Int)(opt: Optimum): Seq[Double] = {
-    //val alphaSeries = Seq[(Double, Double)]() toXYSeries "alpha"
-
-    //val chart = XYLineChart(alphaSeries)
-    //chart.show()
     val dimY = numberOfActors
 
     val alpha = Wolf(List.fill(dimX)(0d), opt.inf)
     val beta = Wolf(List.fill(dimX)(0d), opt.inf)
     val delta = Wolf(List.fill(dimX)(0d), opt.inf)
 
-    val positions: List[Double] = List.fill(dimX * dimY)(0d).zipWithIndex.map { case (_, index) => bounds(index % dimX).next}
+    val positions: List[Double] = List.fill(dimX * dimY)(0d).zipWithIndex.map { case (_, index) => bounds(index % dimX).next }
 
     def step(iteration: Int)(context: Context): Context = {
       if (iteration < iterations) step(iteration + 1)(context.evolution(2d - iteration * (2d / iterations))) else context
@@ -48,16 +43,14 @@ case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, bounds: 
     step(0)(Context(alpha, beta, delta, positions)).alphaOrg.pos
   }
 
-
-
   case class Wolf(pos: List[Double], score: Double) extends Ordered[Wolf] {
     def compare(that: Wolf): Int = this.score compare that.score
   }
 
   case class Context(alphaOrg: Wolf,
-                     betaOrg: Wolf,
-                     deltaOrg: Wolf,
-                     positions: List[Double]) {
+      betaOrg: Wolf,
+      deltaOrg: Wolf,
+      positions: List[Double]) {
 
     def evolution(a: Double): Context = {
       val evaluated = evaluate
@@ -94,11 +87,11 @@ case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, bounds: 
       val evaluated = rebirth(positions).grouped(dimX).toParArray.map {
         position => (position, f(position))
       }.toList
-      val propositions = evaluated.sortBy(_._2).take(3).map { case (position, value) => Wolf(position, value)}
+      val propositions = evaluated.sortBy(_._2).take(3).map { case (position, value) => Wolf(position, value) }
 
       def reg(Alpha: Wolf,
-              Beta: Wolf,
-              Delta: Wolf)(propositions: List[Wolf]): Context = {
+        Beta: Wolf,
+        Delta: Wolf)(propositions: List[Wolf]): Context = {
         propositions match {
           case head :: tail =>
             val alpha = if (head < alphaOrg) head else Alpha

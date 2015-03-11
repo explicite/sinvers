@@ -58,7 +58,7 @@ case class Data(time: Seq[Double],
       printWriter =>
         val toPrint = (time zip force zip jaw zip velocity).map {
           case (((t, f), j), v) => (t, f, j, v)
-        }.reverse.map { case (t, f, j, v) => s"$v $f $j $t 0.0 0.0 0.0 0.0 0.0"}
+        }.reverse.map { case (t, f, j, v) => s"$v $f $j $t 0.0 0.0 0.0 0.0 0.0" }
         toPrint.foreach(printWriter.println)
     }
   }

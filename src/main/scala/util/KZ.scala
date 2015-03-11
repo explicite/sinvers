@@ -40,8 +40,7 @@ object KZ {
     val start = if (c - w > 0) c - w else 0
     val end = if (c + w < x.length) c + w + 1 else x.length
 
-    for (i <- start until end)
-      s += x(i)
+    for (i <- start until end) s += x(i)
 
     s / (end - start)
   }

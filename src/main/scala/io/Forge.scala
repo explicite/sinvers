@@ -1,18 +1,19 @@
 package io
 
-import java.io.InputStream
 import java.nio.file.Paths
+import java.util.concurrent.Executors
 
 import data.Data
 import regex.Parser
-import util.FileManipulator
+import util.{ FileManipulator, Util }
 
-import io.ExecutionContext.context
 import scala.concurrent.duration._
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.sys.process._
+import scala.util.{ Failure, Success, Try }
 
 case class Forge(xf2Dir: String) extends Parser {
+  implicit val ec = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
 
   def process(don: DON): Data = {
     val process: ProcessBuilder =
@@ -28,19 +29,18 @@ case class Forge(xf2Dir: String) extends Parser {
   }
 
   def fallback[F](function: => F)(to: Duration, default: F, onTheEnd: () => Unit): F = {
-    try {
-      Await.result(Future { function }, to)
-    } catch {
-      case t: Throwable => default
-    } finally {
-      onTheEnd()
+    val result = Try(Await.result(Future {
+      function
+    }, to)) match {
+      case Success(x) => x
+      case Failure(_) => default
     }
+    onTheEnd()
+    result
   }
 
   def compute(process: ProcessBuilder)(don: DON): Data = {
     don.refresh()
-
-    val random = new util.XORShiftRandom()
     var time = List[Double]()
     var load = List[Double]()
     var height = List[Double]()
@@ -64,41 +64,24 @@ case class Forge(xf2Dir: String) extends Parser {
         case None => Unit
       }
     }
-    def processData(inputStream: InputStream): Unit = {
-      try {
-        scala.io.Source.fromInputStream(inputStream).getLines().foreach(processDataLine)
-      } finally {
-        inputStream.close()
-      }
-    }
-
-    def processErrorLine(line: String): Unit = {
-      current.destroy()
-    }
-
-    def processError(inputStream: InputStream): Unit = {
-      try {
-        scala.io.Source.fromInputStream(inputStream).getLines().foreach(processErrorLine)
-      } finally {
-        inputStream.close()
-      }
-    }
 
     def onTheEnd() = {
       if (current != null)
         current.destroy()
-
-      Thread.sleep(2000)
       cleanUp(don.file.getParentFile)
     }
 
     val io = new ProcessIO(
       in => (),
-      processData,
-      processError
+      data => try {
+        scala.io.Source.fromInputStream(data).getLines().foreach(processDataLine)
+      } finally {
+        data.close()
+      },
+      error => error.close()
     )
 
-    Thread.sleep(random.nextDouble(0, 2000).toLong)
+    //Thread.sleep(random.nextDouble(0, 2000).toLong)
 
     fallback {
       current = process.run(io)
@@ -108,13 +91,13 @@ case class Forge(xf2Dir: String) extends Parser {
   }
 
   private def cleanUp(file: java.io.File): Unit = {
-    try {
+    Util.retry(5) {
       if (file.exists()) {
+        Thread.sleep(2000)
         val fileManipulator = new FileManipulator()
         fileManipulator.DeleteDirectory(Paths.get(file.getPath))
       }
-    } catch {
-      case t: Throwable => ()
     }
   }
+
 }

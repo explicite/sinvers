@@ -3,6 +3,7 @@ package io
 import java.io.{ File, PrintWriter }
 
 import reo.{ CustomArgs, HSArgs }
+import util.Util
 
 case class DON(file: File) {
   def name = file.getName
@@ -31,12 +32,11 @@ case class DON(file: File) {
     val content = s".FICHIER\nFOUT = file.out\nFMAY = work.may\nDelete\n.FIN FICHIER\n.UNITES\nmm-mpa-mm.kg.s\n.FIN UNITES\n.INCREMENT\nCalage\n.FIN INCREMENT\n.RHEOLOGIE\n$hsArgs Coeff Poisson = 3.000000e-001\nModule Young = 2.000000e+008\nTemp Init = 1000.00000\nGravity\nInertie\nOutil 0: Coulomb,\nmu = 0.120000\n.FIN RHEOLOGIE\n.THERMIQUE\nMVolumique = 7.800000e-006\nCmassique = 7.000000e+008\nConductmat = 2.300000e+004\nOutil 0\nalphat = 2.000000e+003\ntempout = 1000.000000\neffusoutil = 1.176362e+004\nFace libre\nalphat = 1.000000e+001\ntempext = 1000.000000\nepsilon = 8.800000e-001\n.FIN THERMIQUE\n.PILOTAGE\nFile = pilotage.dat,\nhauteur actuelle = 12.00,\nhauteur finale = 7.522\n.FIN PILOTAGE\n.EXECUTION\nSans Visualisation\n.FIN EXECUTION"
     //val content = s".FICHIER\nFOUT = file.out\nFMAY = work.may\nDelete\n.FIN FICHIER\n.UNITES\nmm-mpa-mm.kg.s\n.FIN UNITES\n.INCREMENT\nCalage\n.FIN INCREMENT\n.RHEOLOGIE\n$hsArgs Coeff Poisson = 3.000000e-001\nModule Young = 2.000000e+008\nTemp Init = 1000.00000\nGravity\nInertie\nOutil 0: Coulomb,\nmu = 0.120000\n.FIN RHEOLOGIE\n.THERMIQUE\nMVolumique = 7.800000e-006\nCmassique = 7.000000e+008\nConductmat = 2.300000e+004\nOutil 0\nalphat = 2.000000e+003\ntempout = 1000.000000\neffusoutil = 1.176362e+004\nFace libre\nalphat = 1.000000e+001\ntempext = 1000.000000\nepsilon = 8.800000e-001\n.FIN THERMIQUE\n.EXECUTION\nSans Visualisation\n.FIN EXECUTION"
     val writer = new PrintWriter(file)
-    try {
+
+    Util.retry(10) {
       writer.write(content)
-    } catch {
-      case e: Exception =>
-        updateHS(hsArgs)
     }
+
     writer.flush()
     writer.close()
   }
@@ -46,19 +46,17 @@ case class DON(file: File) {
 
     val content = s".FICHIER\nFOUT = file.out\nFMAY = work.may\nDelete\n.FIN FICHIER\n.UNITES\nmm-mpa-mm.kg.s\n.FIN UNITES\n.RHEOLOGIE\n$customArgs Coeff Poisson = 3.000000e-001\nModule Young = 2.000000e+008\nTemp Init = 1000.00000\nOutil 0: Coulomb,\nmu = 0.120000\n.FIN RHEOLOGIE\n.THERMIQUE\nMVolumique = 7.800000e-006\nCmassique = 7.000000e+008\nConductmat = 2.300000e+004\nOutil 0\nalphat = 2.000000e+003\ntempout = 1000.000000\neffusoutil = 1.176362e+004\nFace libre\nalphat = 1.000000e+001\ntempext = 1000.000000\nepsilon = 8.800000e-001\n.FIN THERMIQUE\n.MAUTO\nautosize\n.FIN MAUTO\n.EXECUTION\ndhsto = 1.000000\nSans Visualisation\n.FIN EXECUTION"
     val writer = new PrintWriter(file)
-    try {
+
+    Util.retry(10) {
       writer.write(content)
-    } catch {
-      case e: Exception =>
-        updateCustom(customArgs)
     }
+
     writer.flush()
     writer.close()
   }
 
   def refresh() = {
     updateHS(this.hsArgs)
-    //updateCustom(this.customArgs)
   }
 
   def files(mesh: String = "work.may", tooling: String = "file.out"): String = {

@@ -2,15 +2,15 @@ name := "sinvers"
 
 version := "0.1"
 
-scalaVersion := "2.11.5"
+scalaVersion := "2.11.6"
 
 resolvers += "Sonatype Releases" at "http://oss.sonatype.org/content/repositories/releases"
 
 libraryDependencies ++= Seq(
-  "org.scalacheck" %% "scalacheck" % "1.11.5" % "test",
-  "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test",
-  "com.github.wookietreiber" % "scala-chart_2.11" % "0.4.2",
-  "com.lowagie" % "itext" % "4.2.1",
+  "org.scalafx" %% "scalafx" % "8.0.31-R7",
+  "com.typesafe.akka" %% "akka-actor" % "2.3.9",
+  "org.scalacheck" %% "scalacheck" % "1.12.2" % "test",
+  "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test",
   "com.storm-enroute" %% "scalameter" % "0.6" % "test"
 )
 
