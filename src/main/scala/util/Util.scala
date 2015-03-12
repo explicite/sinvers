@@ -1,9 +1,11 @@
 package util
 
+import java.io.BufferedOutputStream
 import java.nio.file.StandardCopyOption._
+import java.nio.file.StandardOpenOption._
 import java.nio.file.{ Files, Path }
 
-import scala.util.{ Success, Try }
+import scala.util.{ Failure, Success, Try }
 
 object Util {
   val FileManipulator = new FileManipulator
@@ -23,6 +25,7 @@ object Util {
       Files.copy(source, target, REPLACE_EXISTING)
     } match {
       case Success(path) => path
+      case Failure(err) => throw err
     }
   }
 
@@ -31,6 +34,17 @@ object Util {
       FileManipulator.DeleteDirectory(target)
     } match {
       case Success(path) => path
+      case Failure(err) => throw err
+    }
+  }
+
+  def write(target: Path, data: Array[Byte]): Path = {
+    Try {
+      val out = new BufferedOutputStream(Files.newOutputStream(target, CREATE, TRUNCATE_EXISTING))
+      out.write(data, 0, data.length)
+    } match {
+      case Success(res) => target
+      case Failure(err) => throw err
     }
   }
 }

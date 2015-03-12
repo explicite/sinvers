@@ -9,6 +9,8 @@ resolvers += "Sonatype Releases" at "http://oss.sonatype.org/content/repositorie
 libraryDependencies ++= Seq(
   "org.scalafx" %% "scalafx" % "8.0.31-R7",
   "com.typesafe.akka" %% "akka-actor" % "2.3.9",
+  "com.typesafe.akka" %% "akka-slf4j" % "2.3.9",
+  "org.slf4j" % "slf4j-simple" % "1.7.10",
   "org.scalacheck" %% "scalacheck" % "1.12.2" % "test",
   "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test",
   "com.storm-enroute" %% "scalameter" % "0.6" % "test"

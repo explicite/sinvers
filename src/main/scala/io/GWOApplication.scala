@@ -26,7 +26,7 @@ object GWOApplication extends Application {
     }
     val optimizer = GreyWolfOptimizer(fit, bounds)
     val start = Platform.currentTime
-    val min = optimizer.min(100, 50)
+    val min = optimizer.min(8, 1)
     val stop = Platform.currentTime
     val duration = Duration(stop - start, MICROSECONDS)
 

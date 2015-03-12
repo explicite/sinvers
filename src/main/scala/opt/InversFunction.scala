@@ -1,16 +1,27 @@
 package opt
 
 import java.io.File
-import java.nio.file.StandardCopyOption.REPLACE_EXISTING
-import java.nio.file.{ Files, Path, Paths }
+import java.nio.file.Paths
 
-import data.DataFile
+import akka.actor.{ ActorSystem, Props }
+import akka.pattern.ask
+import akka.util.Timeout
+import data.{ Data, DataFile }
+import io.forge.Protocol.Job
+import io.forge.{ Protocol, Supervisor }
 import io.{ DON, Forge }
 import math._
 import reo.HSArgs
-import util.{ Util, KZ, XORShiftRandom, Persist }
+import util.{ Persist, XORShiftRandom }
+
+import scala.concurrent.Await
+import scala.concurrent.duration._
+import scala.util.{ Failure, Success, Try }
 
 case class InversFunction(forge: Forge, originalDon: DON, data: DataFile) {
+  val system = ActorSystem("forge")
+  val supervisor = system.actorOf(Props[Supervisor], "supervisor")
+
   val random = new XORShiftRandom()
   val current = data.current
 
@@ -28,7 +39,6 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile) {
   val interval = {
     val max = 12 + 0.1
     val min = 7.522 - 0.1
-
     StaticInterval(min, max)
   }
 
@@ -40,68 +50,21 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile) {
     //val splineInterpolator = Interpolator.splineInterpolate(filteredJaw.toArray, KZ(filteredForce.toArray, 100, 2).toArray)
     val splineInterpolator = Interpolator.splineInterpolate(filteredJaw.toArray, filteredForce.toArray)
 
-    /* def save(file: File): Unit = {
-      def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
-        val p = new java.io.PrintWriter(f)
-        try op(p) finally p.close()
-      }
-
-      printToFile(file) {
-        printWriter =>
-          val toPrint = presentForce.zip(presentJaw).reverse.map {
-            case (f, j) => s"0.0 $f $j 0.0 0.0 0.0 0.0 0.0 0.0"
-          }
-          toPrint.foreach(printWriter.println)
-      }
-    }
-
-    save(new File("data.txt"))*/
-
     splineInterpolator
   }
 
   //return fitness for current context
   def fitness(args: Seq[Double]): Double = {
-    val don = prepareFiles(java.util.UUID.randomUUID().toString)
-
-    val hsArgs = HSArgs(args)
-    don.updateHS(hsArgs)
-
-    val computed = forge process don
-    val fit = computed.fit(interpolator, interval)
-
-    println(s"fitness:$fit")
-
-    fit
-  }
-
-  private def prepareFiles(hash: String): DON = {
-    def fileCopy(path: Path)(directory: (String) => String): Unit = {
-      Util.retry(5) {
-        Files.copy(path, Paths.get(directory(path.getFileName.toString)), REPLACE_EXISTING)
-      }
+    implicit val timeout = Timeout(20 seconds)
+    val feature = supervisor ? Job(Paths.get(forge.xf2Dir), Paths.get(originalDon.workingDirectory), HSArgs(args))
+    val computed = Try(Await.result(feature, timeout.duration)) match {
+      case Success(result) => result.asInstanceOf[Data]
+      case Failure(ex) => Data.empty
     }
 
-    def newDirectory(name: String) = s"${originalDon.workingDirectory}//$hash//$name"
-
-    val directory = new java.io.File(newDirectory("/"))
-    directory.mkdirs()
-
-    fileCopy(originalDon.file.toPath)(newDirectory)
-
-    //copy *.don
-    val don = DON(new java.io.File(newDirectory(originalDon.name)))
-
-    //copy *.may
-    fileCopy(Paths.get(s"${originalDon.workingDirectory}//work.may"))(newDirectory)
-
-    //copy *.out
-    fileCopy(Paths.get(s"${originalDon.workingDirectory}//file.out"))(newDirectory)
-
-    //copy *.dat
-    fileCopy(Paths.get(s"${originalDon.workingDirectory}//pilotage.dat"))(newDirectory)
-
-    don
+    val fit = computed.fit(interpolator, interval)
+    println(s"fitness:$fit")
+    fit
   }
 
 }
