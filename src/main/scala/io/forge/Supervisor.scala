@@ -1,8 +1,9 @@
 package io.forge
 
-import akka.actor.{ Actor, ActorLogging, Props, Terminated }
+import akka.actor.SupervisorStrategy.Stop
+import akka.actor._
 import akka.routing.{ ActorRefRoutee, RoundRobinRoutingLogic, Router }
-import io.forge.Protocol.Job
+import io.forge.Protocol._
 
 import scala.concurrent.duration._
 
@@ -10,6 +11,10 @@ class Supervisor
     extends Actor
     with ActorLogging {
   context.setReceiveTimeout(30 seconds)
+
+  override val supervisorStrategy = OneForOneStrategy(maxNrOfRetries = 0, withinTimeRange = 100 millisecond) {
+    case _ => Stop
+  }
 
   var router = {
     val routees = Vector.fill(4) {
@@ -22,9 +27,9 @@ class Supervisor
 
   def receive = {
     case job: Job =>
-      log.info(s"route job to worker")
       router.route(job, sender())
     case Terminated(a) =>
+      log.info(s"terminated:$a")
       router = router.removeRoutee(a)
       val r = context.actorOf(Props[Worker])
       context watch r

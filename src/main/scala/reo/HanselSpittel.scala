@@ -44,8 +44,8 @@ object HSArgs {
   def apply(args: Seq[Double]): HSArgs = {
     args match {
       case a1 :: m1 :: m2 :: m3 :: m4 :: Nil => HSArgs(a1, m1, m2, m3, m4, 0d, 0d, 0d, 0d, 0d, 0d)
-      case sx: Seq[Double] if sx.size == 11 => HSArgs(args(0), args(1), args(2), args(3), args(4), args(5), args(6), args(7), args(8), args(9), args(10))
-      case _ => throw new Exception("not satisfied numbers of arguments")
+      case sx: Seq[Double] if sx.size == 11  => HSArgs(args(0), args(1), args(2), args(3), args(4), args(5), args(6), args(7), args(8), args(9), args(10))
+      case _                                 => throw new Exception("not satisfied numbers of arguments")
     }
   }
 

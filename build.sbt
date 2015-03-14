@@ -1,3 +1,5 @@
+import scalariform.formatter.preferences._
+
 name := "sinvers"
 
 version := "0.1"
@@ -5,6 +7,10 @@ version := "0.1"
 scalaVersion := "2.11.6"
 
 resolvers += "Sonatype Releases" at "http://oss.sonatype.org/content/repositories/releases"
+
+// ScalaFX
+unmanagedJars in Compile += Attributed.blank(
+  file(System.getenv("JAVAFX_HOME") + "/rt/lib/jfxrt.jar"))
 
 libraryDependencies ++= Seq(
   "org.scalafx" %% "scalafx" % "8.0.31-R7",
@@ -23,3 +29,8 @@ logBuffered := false
 parallelExecution in Test := false
 
 scalariformSettings
+
+ScalariformKeys.preferences := ScalariformKeys.preferences.value
+  .setPreference(AlignSingleLineCaseStatements, true)
+  .setPreference(DoubleIndentClassDeclaration, true)
+  .setPreference(PreserveDanglingCloseParenthesis, true)

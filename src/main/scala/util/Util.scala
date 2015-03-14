@@ -4,6 +4,7 @@ import java.io.BufferedOutputStream
 import java.nio.file.StandardCopyOption._
 import java.nio.file.StandardOpenOption._
 import java.nio.file.{ Files, Path }
+import java.time.Duration
 
 import scala.util.{ Failure, Success, Try }
 
@@ -15,8 +16,8 @@ object Util {
       fn
     } match {
       case x: Success[T] => x
-      case _ if n > 1 => retry(n - 1)(fn)
-      case f => f
+      case _ if n > 1    => retry(n - 1)(fn)
+      case f             => f
     }
   }
 
@@ -25,26 +26,38 @@ object Util {
       Files.copy(source, target, REPLACE_EXISTING)
     } match {
       case Success(path) => path
-      case Failure(err) => throw err
+      case Failure(err)  => throw err
     }
   }
 
   def delete(target: Path): Path = {
     Util.retry(5) {
-      FileManipulator.DeleteDirectory(target)
+      Thread.sleep(200)
+      if (!Files.notExists(target))
+        FileManipulator.DeleteDirectory(target)
+      target
     } match {
       case Success(path) => path
-      case Failure(err) => throw err
+      case Failure(err)  => throw err
     }
   }
 
   def write(target: Path, data: Array[Byte]): Path = {
-    Try {
-      val out = new BufferedOutputStream(Files.newOutputStream(target, CREATE, TRUNCATE_EXISTING))
+    val out = new BufferedOutputStream(Files.newOutputStream(target, CREATE, TRUNCATE_EXISTING))
+    try {
       out.write(data, 0, data.length)
-    } match {
-      case Success(res) => target
-      case Failure(err) => throw err
+      target
+    } finally {
+      out.flush()
+      out.close()
     }
+  }
+
+  def time[T](block: => T): T = {
+    val t0 = System.nanoTime()
+    val result = block // call-by-name
+    val t1 = System.nanoTime()
+    println(s"elapsed time: ${Duration.ofNanos(t1 - t0)}")
+    result
   }
 }

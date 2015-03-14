@@ -18,33 +18,34 @@ trait Environment extends Parser {
 
   var environment: Path = null
   var process: Process = null
+  var uuid: String = null
 
   val DON = "sym.don"
   val MESH = "work.may"
   val OUT = "file.out"
-  val PILOTAGE = "pilotage.dat"
+  val STEERING = "pilotage.dat"
 
-  def environment(forge: Path, source: Path): Path = {
-    val uuid = UUID.randomUUID().toString
+  def environment(forge: Path, source: Path, hSArgs: HSArgs): Path = {
+    uuid = UUID.randomUUID().toString
     val environment = source.resolve(uuid)
     Files.createDirectory(environment)
     //coping needed files
-    Util.copy(source.resolve(DON), environment.resolve(DON))
+    createDon(environment.resolve(DON), hSArgs)
+    Util.copy(source.resolve(STEERING), environment.resolve(STEERING))
     Util.copy(source.resolve(MESH), environment.resolve(MESH))
     Util.copy(source.resolve(OUT), environment.resolve(OUT))
 
     environment
   }
 
-  def processBuilder(forge: Path, environment: Path, hSArgs: HSArgs): ProcessBuilder = {
-    createPilotage(environment.resolve(PILOTAGE), hSArgs)
+  def processBuilder(forge: Path, environment: Path): ProcessBuilder = {
     Process(
-      Seq(s"$forge\\bin\\xf2_p1.exe", DON),
+      Seq(s"${forge.resolve("bin/xf2_p1.exe")}", DON),
       environment.toFile,
-      "PP2D_DIR" -> forge.toString,
+      "PP2D_DIR" -> forge.toAbsolutePath.toString,
       "FORGE2_IO" -> "BIG_ENDIAN",
       "lang" -> "eng",
-      "WORK_DIR" -> "don.workingDirectory"
+      "WORK_DIR" -> environment.toString
     )
   }
 
@@ -58,12 +59,16 @@ trait Environment extends Parser {
     error => error.close()
   )
 
-  private def clean(source: Path): Path = {
+  protected def clean(source: Path): Path = {
+    if (process != null)
+      process.destroy()
+
+    Thread.sleep(200)
     Util.delete(source)
   }
 
-  private def createPilotage(target: Path, args: HSArgs): Path = {
-    val pilotage =
+  private def createDon(target: Path, args: HSArgs): Path = {
+    val don =
       s""".FICHIER\nFOUT = $OUT
           |FMAY = $MESH
           |Delete
@@ -98,14 +103,14 @@ trait Environment extends Parser {
           |epsilon = 8.800000e-001
           |.FIN THERMIQUE
           |.PILOTAGE
-          |File = $PILOTAGE,
-                             |hauteur actuelle = 12.00,
-                             |hauteur finale = 7.522
-                             |.FIN PILOTAGE
-                             |.EXECUTION
-                             |Sans Visualisation
-                             |.FIN EXECUTION""".stripMargin
-    Util.write(target, pilotage.getBytes)
+          |File = $STEERING,
+          |hauteur actuelle = 12.00,
+          |hauteur finale = 7.522
+          |.FIN PILOTAGE
+          |.EXECUTION
+          |Sans Visualisation
+          |.FIN EXECUTION""".stripMargin
+    Util.write(target, don.getBytes)
   }
 
   private def processDataLine(line: String): Unit = {
@@ -119,11 +124,11 @@ trait Environment extends Parser {
     }
     HeightRegex findFirstIn line match {
       case Some(HeightRegex(_, mantissa, exponent)) => height += formatDouble(mantissa, exponent)
-      case None => Unit
+      case None                                     => Unit
     }
     VelocityRegex findFirstIn line match {
       case Some(VelocityRegex(_, mantissa, exponent)) => velocity += formatDouble(mantissa, exponent)
-      case None => Unit
+      case None                                       => Unit
     }
   }
 

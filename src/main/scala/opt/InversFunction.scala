@@ -1,6 +1,5 @@
 package opt
 
-import java.io.File
 import java.nio.file.Paths
 
 import akka.actor.{ ActorSystem, Props }
@@ -8,18 +7,18 @@ import akka.pattern.ask
 import akka.util.Timeout
 import data.{ Data, DataFile }
 import io.forge.Protocol.Job
-import io.forge.{ Protocol, Supervisor }
+import io.forge.Supervisor
 import io.{ DON, Forge }
 import math._
 import reo.HSArgs
-import util.{ Persist, XORShiftRandom }
+import util.XORShiftRandom
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.util.{ Failure, Success, Try }
 
-case class InversFunction(forge: Forge, originalDon: DON, data: DataFile) {
-  val system = ActorSystem("forge")
+case class InversFunction(forge: Forge, originalDon: DON, data: DataFile, system: ActorSystem) {
+  implicit val timeout = Timeout(20 minutes)
+
   val supervisor = system.actorOf(Props[Supervisor], "supervisor")
 
   val random = new XORShiftRandom()
@@ -29,11 +28,6 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile) {
     val velocityStep = current.velocity.scan(0d)(_ + _).tail
     val jaw = current.jaw
     velocityStep.zip(jaw)
-  }
-
-  val pilotage = {
-    val file = new File(s"${originalDon.workingDirectory}//pilotage.dat")
-    Persist.zipped(steering, file)
   }
 
   val interval = {
@@ -55,14 +49,9 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile) {
 
   //return fitness for current context
   def fitness(args: Seq[Double]): Double = {
-    implicit val timeout = Timeout(20 seconds)
-    val feature = supervisor ? Job(Paths.get(forge.xf2Dir), Paths.get(originalDon.workingDirectory), HSArgs(args))
-    val computed = Try(Await.result(feature, timeout.duration)) match {
-      case Success(result) => result.asInstanceOf[Data]
-      case Failure(ex) => Data.empty
-    }
-
-    val fit = computed.fit(interpolator, interval)
+    val request = (supervisor ? Job(Paths.get(forge.xf2Dir), Paths.get(originalDon.workingDirectory), HSArgs(args))).mapTo[Data]
+    val result = Await.result(request, timeout.duration)
+    val fit = result.fit(interpolator, interval)
     println(s"fitness:$fit")
     fit
   }

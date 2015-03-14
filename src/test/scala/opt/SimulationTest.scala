@@ -15,7 +15,7 @@ class SimulationTest extends BaseTest {
     val experimentDirectory = "C:\\Users\\Jan\\Desktop\\mgr\\HA000490.D01"
     val don = DON(new java.io.File(s"$workingDirectory\\newSym.don"))
     val experimentData = DataFile(new java.io.File(experimentDirectory))
-    val function = InversFunction(process, don, experimentData)
+    val function = InversFunction(process, don, experimentData,system)
     val bounds = Seq(
       StaticInterval(862908.976, 862908.976), //a1 ok
       StaticInterval(-0.00092, -0.00092), //m1 ok

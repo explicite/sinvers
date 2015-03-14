@@ -1,9 +1,7 @@
 package io
 
 import opt.{ GreyWolfOptimizer, StaticInterval }
-
-import scala.compat.Platform
-import scala.concurrent.duration._
+import util.Util
 
 object GWOApplication extends Application {
   def main(args: Array[String]): Unit = {
@@ -25,11 +23,11 @@ object GWOApplication extends Application {
       function.fitness(sx)
     }
     val optimizer = GreyWolfOptimizer(fit, bounds)
-    val start = Platform.currentTime
-    val min = optimizer.min(8, 1)
-    val stop = Platform.currentTime
-    val duration = Duration(stop - start, MICROSECONDS)
-
-    println(s"Computation in: ${duration.toSeconds}sec \n$min")
+    Util.time {
+      DONConfigurator ! ui.Protocol.Show
+      val min = optimizer.min(10, 3)
+      DONConfigurator ! ui.Protocol.Close
+      println(s"minumum: $min")
+    }
   }
 }

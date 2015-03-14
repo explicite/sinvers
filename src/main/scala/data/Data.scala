@@ -13,13 +13,8 @@ case class Data(time: Seq[Double],
     jaw: Seq[Double],
     velocity: Seq[Double]) {
   private val KGF = 1016.0469053138122
-  val size = {
-    if (force.size != jaw.size) throw new Exception("Data length for force and displacement are not equal!")
-    force.size
-  }
-  val nonEmpty = size != 0
 
-  def valid(interval: Interval): Boolean = nonEmpty && size >= 30
+  def valid(interval: Interval): Boolean = force.size >= 30
 
   def fit(interpolator: PolynomialSplineFunction, interval: Interval): Double = {
     if (valid(interval)) {
@@ -82,7 +77,7 @@ object Data {
     val source = Source.fromFile(file)
 
     val lines = source.nonEmpty match {
-      case true => source.getLines().drop(1)
+      case true  => source.getLines().drop(1)
       case false => throw new Exception(s"Empty data file:${file.getName}")
     }
 
@@ -90,7 +85,7 @@ object Data {
       for (line <- lines) yield {
         line.split("\\s+") match {
           case Array(t, f, j, v, _, _, _, _, _) => (t.toDouble, f.toDouble, j.toDouble, v.toDouble)
-          case _ => throw new Exception(s"Inconsistent date in file:${file.getName}")
+          case _                                => throw new Exception(s"Inconsistent date in file:${file.getName}")
         }
       }
     }.toList.unzip4

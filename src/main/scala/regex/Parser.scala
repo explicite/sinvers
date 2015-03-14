@@ -30,7 +30,7 @@ trait Parser {
     def validDouble(double: String) = {
       double match {
         case null => "0"
-        case _ => double
+        case _    => double
       }
     }
 

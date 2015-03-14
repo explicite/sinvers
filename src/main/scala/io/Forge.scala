@@ -57,11 +57,11 @@ case class Forge(xf2Dir: String) extends Parser {
       }
       HeightRegex findFirstIn line match {
         case Some(HeightRegex(_, mantissa, exponent)) => height ::= formatDouble(mantissa, exponent)
-        case None => Unit
+        case None                                     => Unit
       }
       VelocityRegex findFirstIn line match {
         case Some(VelocityRegex(_, mantissa, exponent)) => velocity ::= formatDouble(mantissa, exponent)
-        case None => Unit
+        case None                                       => Unit
       }
     }
 
