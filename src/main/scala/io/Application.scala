@@ -4,10 +4,12 @@ import akka.actor.{ Props, ActorSystem }
 import data.DataFile
 import opt.InversFunction
 import ui.DONConfigurator
+import ui.controls.ProgressBar
 
 trait Application {
   val system = ActorSystem("sinvers")
   val DONConfigurator = system.actorOf(Props[DONConfigurator].withDispatcher("scalafx-dispatcher"), "don-configurator")
+  val progressBar = system.actorOf(Props[ProgressBar].withDispatcher("scalafx-dispatcher"), "progress-bar")
 
   val fx2Dir = "C:\\Users\\Jan\\Desktop\\Forge2-V3.0"
   val workingDirectory = "C:\\Users\\Jan\\Desktop\\sym"

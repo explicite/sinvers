@@ -23,10 +23,11 @@ object GWOApplication extends Application with App {
       function.fitness(sx)
     }
     val optimizer = GreyWolfOptimizer(fit, bounds)
+    val wolfs = 10
+    val iterations = 10
     Util.time {
-      DONConfigurator ! ui.Protocol.Show
-      val min = optimizer.min(200, 200)
-      DONConfigurator ! ui.Protocol.Close
+      progressBar ! ui.controls.ProgressBarProtocol.Set(wolfs * iterations)
+      val min = optimizer.min(wolfs, iterations)
       println(s"minumum: $min")
     }
 

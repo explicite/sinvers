@@ -20,6 +20,7 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile, system
   implicit val timeout = Timeout(20 minutes)
 
   val supervisor = system.actorOf(Props[Supervisor], "supervisor")
+  val progressBar = system.actorSelection("/user/progress-bar")
 
   val random = new XORShiftRandom()
   val current = data.current
@@ -52,6 +53,7 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile, system
     val request = (supervisor ? Job(Paths.get(forge.xf2Dir), Paths.get(originalDon.workingDirectory), HSArgs(args))).mapTo[Data]
     val result = Await.result(request, timeout.duration)
     val fit = result.fit(interpolator, interval)
+    progressBar ! ui.controls.ProgressBarProtocol.Increment
     println(s"fitness:$fit")
     fit
   }
