@@ -3,8 +3,8 @@ package io
 import opt.{ GreyWolfOptimizer, StaticInterval }
 import util.Util
 
-object GWOApplication extends Application {
-  def main(args: Array[String]): Unit = {
+object GWOApplication extends Application with App {
+  override def main(args: Array[String]): Unit = {
     val bounds = Seq(
       StaticInterval(1200, 1600), //a1
       StaticInterval(-0.002, -0.003), //m1
@@ -25,9 +25,12 @@ object GWOApplication extends Application {
     val optimizer = GreyWolfOptimizer(fit, bounds)
     Util.time {
       DONConfigurator ! ui.Protocol.Show
-      val min = optimizer.min(10, 3)
+      val min = optimizer.min(200, 200)
       DONConfigurator ! ui.Protocol.Close
       println(s"minumum: $min")
     }
+
+    system.shutdown()
+    System.exit(0)
   }
 }

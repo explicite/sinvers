@@ -8,10 +8,6 @@ scalaVersion := "2.11.6"
 
 resolvers += "Sonatype Releases" at "http://oss.sonatype.org/content/repositories/releases"
 
-// ScalaFX
-unmanagedJars in Compile += Attributed.blank(
-  file(System.getenv("JAVAFX_HOME") + "/rt/lib/jfxrt.jar"))
-
 libraryDependencies ++= Seq(
   "org.scalafx" %% "scalafx" % "8.0.31-R7",
   "com.typesafe.akka" %% "akka-actor" % "2.3.9",
@@ -21,6 +17,8 @@ libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test",
   "com.storm-enroute" %% "scalameter" % "0.6" % "test"
 )
+
+fork in run := true
 
 testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
 
