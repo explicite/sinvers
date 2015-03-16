@@ -12,6 +12,8 @@ import io.{ DON, Forge }
 import math._
 import reo.HSArgs
 import util.XORShiftRandom
+import akka.actor.PoisonPill
+import akka.routing.Broadcast
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -52,10 +54,12 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile, system
   def fitness(args: Seq[Double]): Double = {
     val request = (supervisor ? Job(Paths.get(forge.xf2Dir), Paths.get(originalDon.workingDirectory), HSArgs(args))).mapTo[Data]
     val result = Await.result(request, timeout.duration)
-    val fit = result.fit(interpolator, interval)
     progressBar ! ui.controls.ProgressBarProtocol.Increment
-    println(s"fitness:$fit")
-    fit
+    result.fit(interpolator, interval)
   }
+
+  def stop = ???
+
+  def start = ???
 
 }

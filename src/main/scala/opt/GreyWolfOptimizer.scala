@@ -1,9 +1,10 @@
 package opt
 
+import akka.actor.ActorRef
+
 import scala.math.abs
 
 case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, bounds: Seq[T]) {
-
   val dimX = bounds.length
   val random = new java.security.SecureRandom()
 

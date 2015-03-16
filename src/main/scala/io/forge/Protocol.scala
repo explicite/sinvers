@@ -12,4 +12,6 @@ object Protocol {
 
   case class Restart(job: Job)
 
+  case object Stop
+
 }

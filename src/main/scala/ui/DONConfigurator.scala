@@ -30,10 +30,10 @@ class DONConfigurator extends Actor with ActorLogging {
 
   def receive = {
     case Protocol.Show =>
-      log.info("recive: Show")
+      log.debug("recive: Show")
       stage.show()
     case Protocol.Close =>
-      log.info("recive: Close")
+      log.debug("recive: Close")
       stage.close()
     case _ => ()
   }

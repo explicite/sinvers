@@ -1,6 +1,6 @@
 package io
 
-import akka.actor.{ Props, ActorSystem }
+import akka.actor.{ ActorSystem, Props }
 import data.DataFile
 import opt.InversFunction
 import ui.DONConfigurator
@@ -10,6 +10,7 @@ trait Application {
   val system = ActorSystem("sinvers")
   val DONConfigurator = system.actorOf(Props[DONConfigurator].withDispatcher("scalafx-dispatcher"), "don-configurator")
   val progressBar = system.actorOf(Props[ProgressBar].withDispatcher("scalafx-dispatcher"), "progress-bar")
+  //val fitnessChart = system.actorOf(Props[FitnessChart].withDispatcher("scalafx-dispatcher"), "fitness-chart")
 
   val fx2Dir = "C:\\Users\\Jan\\Desktop\\Forge2-V3.0"
   val workingDirectory = "C:\\Users\\Jan\\Desktop\\sym"

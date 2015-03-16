@@ -29,7 +29,7 @@ class Supervisor
     case job: Job =>
       router.route(job, sender())
     case Terminated(a) =>
-      log.info(s"terminated:$a")
+      log.debug(s"terminated:$a")
       router = router.removeRoutee(a)
       val r = context.actorOf(Props[Worker])
       context watch r
