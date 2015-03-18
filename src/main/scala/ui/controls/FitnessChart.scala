@@ -1,14 +1,9 @@
 package ui.controls
 
 import akka.actor.{ Actor, ActorLogging }
-import ui.controls.FitnessChartProtocol.Iteration
 
 import scalafx.collections.ObservableBuffer
-import scalafx.geometry.Insets
-import scalafx.scene.Scene
 import scalafx.scene.chart._
-import scalafx.scene.layout.BorderPane
-import scalafx.stage.Stage
 
 class FitnessChart extends Actor with ActorLogging {
 
@@ -21,49 +16,47 @@ class FitnessChart extends Actor with ActorLogging {
   }
 
   private val alpha = new XYChart.Series[Number, Number] {
-    name = "alpha"
+    name = "alpha wolf"
   }
 
-  private val beta = new XYChart.Series[Number, Number] {
-    name = "beta"
-  }
-
-  private val delta = new XYChart.Series[Number, Number] {
-    name = "delta"
-  }
-
-  private val chart = new LineChart[Number, Number](xAxis, yAxis, ObservableBuffer(alpha, beta, delta)) {
+  private val chart = new LineChart[Number, Number](xAxis, yAxis, ObservableBuffer(alpha)) {
     title = "Fitness monitoring for GWO"
   }
 
-  val stage = {
-    val s = new Stage {
-      outer =>
-      title = "Fitness"
-      scene = new Scene {
-        root = new BorderPane {
-          padding = Insets(25)
-          bottom = chart
-        }
+  import FitnessChartProtocol._
+
+  def receive = toIncrement
+
+  def toIncrement: Receive = {
+    case Iteration(fitness: Double) =>
+      if (Double.MaxValue > fitness) {
+        alpha.getData.add(XYChart.Data[Number, Number](0, fitness))
       }
-    }
-    s.show()
-    s
+      context become incremented(1)
   }
 
-  def receive = {
-    case Iteration(a, b, d, iteration) =>
-
-      if (Double.MaxValue > a) {
-        alpha.getData.add(XYChart.Data[Number, Number](iteration, a))
-        beta.getData.add(XYChart.Data[Number, Number](iteration, b))
-        delta.getData.add(XYChart.Data[Number, Number](iteration, d))
+  def incremented(iteration: Int): Receive = {
+    case Iteration(fitness) =>
+      if (Double.MaxValue > fitness) {
+        alpha.getData.add(XYChart.Data[Number, Number](iteration, fitness))
       }
+      context become incremented(iteration + 1)
+
+    case Reset => context become toIncrement
   }
+
+  @throws[Exception](classOf[Exception])
+  override def preStart(): Unit = {
+    super.preStart()
+    GUI.pane.setCenter(chart)
+  }
+
 }
 
 object FitnessChartProtocol {
 
-  case class Iteration(alpha: Double, beta: Double, delta: Double, iteration: Int)
+  case class Iteration(fitness: Double)
+
+  case object Reset
 
 }

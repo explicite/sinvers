@@ -12,8 +12,6 @@ import io.{ DON, Forge }
 import math._
 import reo.HSArgs
 import util.XORShiftRandom
-import akka.actor.PoisonPill
-import akka.routing.Broadcast
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -23,6 +21,9 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile, system
 
   val supervisor = system.actorOf(Props[Supervisor], "supervisor")
   val progressBar = system.actorSelection("/user/progress-bar")
+  val fitnessChart = system.actorSelection("/user/fitness-chart")
+  progressBar ! ui.controls.ProgressBarProtocol.Reset
+  fitnessChart ! ui.controls.FitnessChartProtocol.Reset
 
   val random = new XORShiftRandom()
   val current = data.current
@@ -54,12 +55,10 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile, system
   def fitness(args: Seq[Double]): Double = {
     val request = (supervisor ? Job(Paths.get(forge.xf2Dir), Paths.get(originalDon.workingDirectory), HSArgs(args))).mapTo[Data]
     val result = Await.result(request, timeout.duration)
-    progressBar ! ui.controls.ProgressBarProtocol.Increment
-    result.fit(interpolator, interval)
+    val fitness = result.fit(interpolator, interval)
+    progressBar ! ui.controls.ProgressBarProtocol.Increment(System.nanoTime())
+    fitnessChart ! ui.controls.FitnessChartProtocol.Iteration(fitness)
+    fitness
   }
-
-  def stop = ???
-
-  def start = ???
 
 }

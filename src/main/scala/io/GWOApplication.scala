@@ -26,12 +26,11 @@ object GWOApplication extends Application with App {
     val wolfs = 10
     val iterations = 10
     Util.time {
-      progressBar ! ui.controls.ProgressBarProtocol.Set(wolfs * iterations)
+      progress ! ui.controls.ProgressBarProtocol.Set(System.nanoTime(), wolfs * iterations)
       val min = optimizer.min(wolfs, iterations)
       println(s"minumum: $min")
     }
 
     system.shutdown()
-    System.exit(0)
   }
 }

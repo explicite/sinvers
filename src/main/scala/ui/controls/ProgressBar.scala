@@ -4,68 +4,65 @@ import akka.actor.{ Actor, ActorLogging }
 
 import scala.language.postfixOps
 import scalafx.geometry.Insets
-import scalafx.scene.Scene
-import scalafx.scene.control.{ ProgressBar => FXProgressBar }
-import scalafx.scene.layout.BorderPane
+import scalafx.scene.control.ProgressBar
+import scalafx.scene.layout.HBox
 import scalafx.scene.text.Text
-import scalafx.stage.Stage
 
-class ProgressBar extends Actor with ActorLogging {
+class Progress extends Actor with ActorLogging {
 
   import ui.controls.ProgressBarProtocol._
 
-  var max: Double = 0
-  var start = System.nanoTime()
-
-  def step() = 1 / max
-
-  val progressBar = new FXProgressBar() {
+  val progressBar = new ProgressBar() {
     minWidth = 750
     progress = 0
     stylesheets add "css/progress-bar.css"
   }
 
-  var eta = new Text {
+  val eta = new Text {
     wrappingWidth = 750
-    text = ""
-  }
-  val stage = new Stage {
-    outer =>
-    title = "Progress"
-    scene = new Scene {
-      root = new BorderPane {
-        padding = Insets(25)
-        center = progressBar
-        bottom = eta
-      }
-    }
   }
 
-  def receive = {
-    case Increment =>
-      progressBar.setProgress(progressBar.progress.value + step())
+  val progress = new HBox {
+    padding = Insets(20)
+    spacing = 20
+    children = Seq(progressBar, eta)
+  }
+
+  def receive = toSet
+
+  def set(start: Long, max: Double): Receive = {
+    case Increment(stamp) =>
+      progressBar.setProgress(progressBar.progress.value + 1 / max)
       eta.text = {
-        val stop = System.nanoTime()
         val iterations = max * progressBar.progress.value
-        val performance = iterations / ((stop - start) / 1e10)
+        val performance = iterations * 1e9 / (stamp - start)
         val duration = (max - iterations) * performance
-        s"ETA: $duration s, performance: $performance it/s"
+        s"ETA: ${formatter(duration)} s performance: ${formatter(performance)} it/s"
       }
-
-    case Set(newMax) =>
-      stage.close()
-      max = newMax
-      start = System.nanoTime()
+    case Reset =>
       progressBar.setProgress(0)
-      stage.show()
+      context become toSet
   }
 
+  def toSet: Receive = {
+    case Set(start, max) => context become set(start, max)
+  }
+
+  def formatter(d: Double): String = new java.text.DecimalFormat("0.###").format(d)
+
+  @throws[Exception](classOf[Exception])
+  override def preStart(): Unit = {
+    super.preStart()
+    GUI.pane.setBottom(progress)
+  }
 }
 
 object ProgressBarProtocol {
 
-  case object Increment
+  case class Increment(stamp: Long)
 
-  case class Set(max: Double)
+  case class Set(start: Long, max: Double)
+
+  case object Reset
 
 }

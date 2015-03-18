@@ -1,7 +1,5 @@
 package opt
 
-import akka.actor.ActorRef
-
 import scala.math.abs
 
 case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, bounds: Seq[T]) {
@@ -112,5 +110,6 @@ case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, bounds: 
   object Coefficient {
     def apply(i: Double): Coefficient = Coefficient(2d * i * random.nextDouble() - 1d, 2d * random.nextDouble())
   }
-
 }
+
+case class IterationResult(alpha: Double, beta: Double, delta: Double)
