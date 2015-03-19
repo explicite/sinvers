@@ -9,7 +9,7 @@ scalaVersion := "2.11.6"
 resolvers += "Sonatype Releases" at "http://oss.sonatype.org/content/repositories/releases"
 
 libraryDependencies ++= Seq(
-  "org.scalafx" %% "scalafx" % "8.0.31-R7",
+  "org.scalafx" %% "scalafx" % "8.0.40-R8",
   "com.typesafe.akka" %% "akka-actor" % "2.3.9",
   "com.typesafe.akka" %% "akka-slf4j" % "2.3.9",
   "org.slf4j" % "slf4j-simple" % "1.7.10",

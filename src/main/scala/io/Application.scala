@@ -2,21 +2,21 @@ package io
 
 import akka.actor.{ ActorSystem, Props }
 import data.DataFile
-import opt.InversFunction
+import opt.FitnessFunction
 import ui.controls.{ FitnessChart, Progress }
+
+import java.nio.file.Paths
 
 trait Application {
   val system = ActorSystem("sinvers")
   val progress = system.actorOf(Props[Progress].withDispatcher("scalafx-dispatcher"), "progress-bar")
   val chart = system.actorOf(Props[FitnessChart].withDispatcher("scalafx-dispatcher"), "fitness-chart")
 
-  val fx2Dir = "C:\\Users\\Jan\\Desktop\\Forge2-V3.0"
-  val workingDirectory = "C:\\Users\\Jan\\Desktop\\sym"
-  val process = Forge(fx2Dir)
+  val fx2Dir = Paths.get("C:\\Users\\Jan\\Desktop\\Forge2-V3.0")
+  val source = Paths.get("C:\\Users\\Jan\\Desktop\\sym")
 
   val experimentDirectory = "C:\\Users\\Jan\\Desktop\\computed.txt"
   //val experimentDirectory = "C:\\Users\\Jan\\Desktop\\mgr\\HA000490.D01"
-  val don = DON(new java.io.File(s"$workingDirectory\\newSym.don"))
-  val experimentData = DataFile(new java.io.File(experimentDirectory))
-  val function = InversFunction(process, don, experimentData, system)
+  val experiment = DataFile(new java.io.File(experimentDirectory), temperature = 1000, steering = "pilotage.dat")
+  val function = FitnessFunction(fx2Dir, source, system, experiment, experiment)
 }

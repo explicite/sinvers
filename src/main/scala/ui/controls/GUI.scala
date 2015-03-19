@@ -1,18 +1,22 @@
 package ui.controls
 
 import scalafx.Includes._
+import scalafx.geometry.Insets
 import scalafx.scene.Scene
-import scalafx.scene.layout.BorderPane
+import scalafx.scene.layout.GridPane
 import scalafx.stage.Stage
 
 object GUI {
-  val pane = new BorderPane {
-
+  val pane = new GridPane {
+    prefWidth = 1024
+    prefHeight = 640
+    padding = Insets(18)
   }
 
   val stage = new Stage {
     title = "sinvers"
-    minWidth = 1024
+    width = 864
+    height = 550
     scene = new Scene {
       root = pane
     }

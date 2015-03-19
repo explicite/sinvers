@@ -7,8 +7,9 @@ import scalafx.scene.chart._
 
 class FitnessChart extends Actor with ActorLogging {
 
-  private val xAxis = new NumberAxis {
+  val xAxis = new NumberAxis {
     label = "iteration"
+    forceZeroInRange = false
   }
 
   private val yAxis = new NumberAxis {
@@ -21,6 +22,8 @@ class FitnessChart extends Actor with ActorLogging {
 
   private val chart = new LineChart[Number, Number](xAxis, yAxis, ObservableBuffer(alpha)) {
     title = "Fitness monitoring for GWO"
+    maxWidth = 750
+    legendVisible = false
   }
 
   import FitnessChartProtocol._
@@ -39,6 +42,7 @@ class FitnessChart extends Actor with ActorLogging {
     case Iteration(fitness) =>
       if (Double.MaxValue > fitness) {
         alpha.getData.add(XYChart.Data[Number, Number](iteration, fitness))
+        if (alpha.getData.size() > 15) alpha.getData.remove(0)
       }
       context become incremented(iteration + 1)
 
@@ -48,7 +52,7 @@ class FitnessChart extends Actor with ActorLogging {
   @throws[Exception](classOf[Exception])
   override def preStart(): Unit = {
     super.preStart()
-    GUI.pane.setCenter(chart)
+    GUI.pane.add(chart, 1, 1)
   }
 
 }

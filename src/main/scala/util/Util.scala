@@ -60,4 +60,6 @@ object Util {
     println(s"elapsed time: ${Duration.ofNanos(t1 - t0)}")
     result
   }
+
+  def formatter(d: Double): String = new java.text.DecimalFormat("0.##############E0").format(d)
 }

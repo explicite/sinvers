@@ -1,22 +1,22 @@
 package opt
 
-import java.nio.file.Paths
-
 import akka.actor.{ ActorSystem, Props }
 import akka.pattern.ask
 import akka.util.Timeout
 import data.{ Data, DataFile }
+import io.DONArgs
 import io.forge.Protocol.Job
 import io.forge.Supervisor
-import io.{ DON, Forge }
 import math._
 import reo.HSArgs
 import util.XORShiftRandom
 
-import scala.concurrent.Await
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ Future, Await }
 import scala.concurrent.duration._
+import java.nio.file.Path
 
-case class InversFunction(forge: Forge, originalDon: DON, data: DataFile, system: ActorSystem) {
+case class FitnessFunction(forge: Path, source: Path, system: ActorSystem, dataList: DataFile*) {
   implicit val timeout = Timeout(20 minutes)
 
   val supervisor = system.actorOf(Props[Supervisor], "supervisor")
@@ -26,11 +26,10 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile, system
   fitnessChart ! ui.controls.FitnessChartProtocol.Reset
 
   val random = new XORShiftRandom()
-  val current = data.current
 
   val steering: Seq[(Double, Double)] = {
-    val velocityStep = current.velocity.scan(0d)(_ + _).tail
-    val jaw = current.jaw
+    val velocityStep = dataList.head.current.velocity.scan(0d)(_ + _).tail
+    val jaw = dataList.head.current.jaw
     velocityStep.zip(jaw)
   }
 
@@ -40,9 +39,9 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile, system
     StaticInterval(min, max)
   }
 
-  val interpolator: PolynomialSplineFunction = {
-    val force = current.force
-    val jaw = current.jaw //.map(12d + _)
+  def interpolator(data: DataFile) = {
+    val force = data.current.force
+    val jaw = data.current.jaw //.map(12d + _)
 
     val (filteredForce, filteredJaw) = force.zip(jaw).filter { case (f, j) => j >= interval.min && j <= interval.max }.groupBy(_._2).map(_._2.head).toSeq.sortBy(_._2).unzip
     //val splineInterpolator = Interpolator.splineInterpolate(filteredJaw.toArray, KZ(filteredForce.toArray, 100, 2).toArray)
@@ -51,11 +50,22 @@ case class InversFunction(forge: Forge, originalDon: DON, data: DataFile, system
     splineInterpolator
   }
 
+  val interpolators = dataList.map(interpolator)
+
   //return fitness for current context
   def fitness(args: Seq[Double]): Double = {
-    val request = (supervisor ? Job(Paths.get(forge.xf2Dir), Paths.get(originalDon.workingDirectory), HSArgs(args))).mapTo[Data]
-    val result = Await.result(request, timeout.duration)
-    val fitness = result.fit(interpolator, interval)
+    val requests = Future.sequence(dataList.zip(interpolators).map {
+      case (dataFile, interpolator) =>
+        val donArgs = DONArgs(HSArgs(args), dataFile.temperature, dataFile.steering)
+        (supervisor ? Job(forge, source, donArgs)).mapTo[Data].map {
+          result =>
+            result.fit(interpolator, interval)
+        }
+    })
+
+    val results = Await.result(requests, timeout.duration)
+    val fitness = results.sum
+
     progressBar ! ui.controls.ProgressBarProtocol.Increment(System.nanoTime())
     fitnessChart ! ui.controls.FitnessChartProtocol.Iteration(fitness)
     fitness

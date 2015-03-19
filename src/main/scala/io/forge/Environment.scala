@@ -3,8 +3,8 @@ package io.forge
 import java.nio.file.{ Files, Path }
 import java.util.UUID
 
+import io.DONArgs
 import regex.Parser
-import reo.HSArgs
 import util.Util
 
 import scala.collection.mutable.ListBuffer
@@ -23,15 +23,14 @@ trait Environment extends Parser {
   val DON = "sym.don"
   val MESH = "work.may"
   val OUT = "file.out"
-  val STEERING = "pilotage.dat"
 
-  def environment(forge: Path, source: Path, hSArgs: HSArgs): Path = {
+  def environment(forge: Path, source: Path, args: DONArgs): Path = {
     uuid = UUID.randomUUID().toString
     val environment = source.resolve(uuid)
     Files.createDirectory(environment)
     //coping needed files
-    createDon(environment.resolve(DON), hSArgs)
-    Util.copy(source.resolve(STEERING), environment.resolve(STEERING))
+    createDon(environment.resolve(DON), args)
+    Util.copy(source.resolve(args.steering), environment.resolve(args.steering))
     Util.copy(source.resolve(MESH), environment.resolve(MESH))
     Util.copy(source.resolve(OUT), environment.resolve(OUT))
 
@@ -67,7 +66,7 @@ trait Environment extends Parser {
     Util.delete(source)
   }
 
-  private def createDon(target: Path, args: HSArgs): Path = {
+  private def createDon(target: Path, args: DONArgs): Path = {
     val don =
       s""".FICHIER\nFOUT = $OUT
           |FMAY = $MESH
@@ -80,10 +79,10 @@ trait Environment extends Parser {
           |Calage
           |.FIN INCREMENT
           |.RHEOLOGIE
-          |$args
+          |${args.hs}
           |Coeff Poisson = 3.000000e-001
           |Module Young = 2.000000e+008
-          |Temp Init = 1000.00000
+          |Temp Init = ${Util.formatter(args.temperature)}
           |Gravity
           |Inertie
           |Outil 0: Coulomb,
@@ -103,7 +102,7 @@ trait Environment extends Parser {
           |epsilon = 8.800000e-001
           |.FIN THERMIQUE
           |.PILOTAGE
-          |File = $STEERING,
+          |File = ${args.steering},
           |hauteur actuelle = 12.00,
           |hauteur finale = 7.522
           |.FIN PILOTAGE

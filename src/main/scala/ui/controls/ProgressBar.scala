@@ -3,6 +3,7 @@ package ui.controls
 import akka.actor.{ Actor, ActorLogging }
 
 import scala.language.postfixOps
+import scala.math.abs
 import scalafx.geometry.Insets
 import scalafx.scene.control.ProgressBar
 import scalafx.scene.layout.HBox
@@ -13,16 +14,15 @@ class Progress extends Actor with ActorLogging {
   import ui.controls.ProgressBarProtocol._
 
   val progressBar = new ProgressBar() {
-    minWidth = 750
+    minWidth = 500
     progress = 0
     stylesheets add "css/progress-bar.css"
   }
 
-  val eta = new Text {
-    wrappingWidth = 750
-  }
+  val eta = new Text {}
 
   val progress = new HBox {
+    minWidth = 750
     padding = Insets(20)
     spacing = 20
     children = Seq(progressBar, eta)
@@ -35,9 +35,9 @@ class Progress extends Actor with ActorLogging {
       progressBar.setProgress(progressBar.progress.value + 1 / max)
       eta.text = {
         val iterations = max * progressBar.progress.value
-        val performance = iterations * 1e9 / (stamp - start)
+        val performance = ((stamp - start) / 1e9) / iterations
         val duration = (max - iterations) * performance
-        s"ETA: ${formatter(duration)} s performance: ${formatter(performance)} it/s"
+        s"ETA: ${formatter(duration)} s performance: ${formatter(1 / performance)} it/s"
       }
     case Reset =>
       progressBar.setProgress(0)
@@ -48,12 +48,12 @@ class Progress extends Actor with ActorLogging {
     case Set(start, max) => context become set(start, max)
   }
 
-  def formatter(d: Double): String = new java.text.DecimalFormat("0.###").format(d)
+  def formatter(d: Double): String = new java.text.DecimalFormat("0.###").format(abs(d))
 
   @throws[Exception](classOf[Exception])
   override def preStart(): Unit = {
     super.preStart()
-    GUI.pane.setBottom(progress)
+    GUI.pane.add(progress, 1, 2)
   }
 }
 

@@ -24,11 +24,13 @@ case class Data(time: Seq[Double],
       val interpolatedForce = jawToInter.map(interpolator.apply)
       //save(new File("data_force.txt"))
       //forceToInter.zip(interpolatedForce).map { case (c, ii) => scala.math.pow(scala.math.E, math.sqrt((c - ii) * (c - ii)).toDouble) }.sum / forceToInter.size
-      forceToInter.zip(interpolatedForce).map {
+      val result = forceToInter.zip(interpolatedForce).map {
         case (c, ii) => scala.math.pow(scala.math.E, math.sqrt {
           (c - ii) * (c - ii) + 1
         }.toDouble)
       }.sum / forceToInter.size
+
+      result - scala.math.E
     } else {
       Double.MaxValue
     }
@@ -53,7 +55,7 @@ case class Data(time: Seq[Double],
       printWriter =>
         val toPrint = (time zip force zip jaw zip velocity).map {
           case (((t, f), j), v) => (t, f, j, v)
-        }.reverse.map { case (t, f, j, v) => s"$v $f $j $t 0.0 0.0 0.0 0.0 0.0" }
+        }.reverseMap { case (t, f, j, v) => s"$v $f $j $t 0.0 0.0 0.0 0.0 0.0" }
         toPrint.foreach(printWriter.println)
     }
   }
@@ -97,7 +99,7 @@ object Data {
 
 }
 
-case class DataFile(file: File) {
+case class DataFile(file: File, temperature: Double, steering: String) {
   val current = Data(file)
 }
 
