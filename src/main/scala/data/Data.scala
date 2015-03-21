@@ -99,7 +99,7 @@ object Data {
 
 }
 
-case class DataFile(file: File, temperature: Double, steering: String) {
+case class DataFile(file: File) {
   val current = Data(file)
 }
 

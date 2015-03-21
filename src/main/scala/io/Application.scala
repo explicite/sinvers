@@ -15,8 +15,11 @@ trait Application {
   val fx2Dir = Paths.get("C:\\Users\\Jan\\Desktop\\Forge2-V3.0")
   val source = Paths.get("C:\\Users\\Jan\\Desktop\\sym")
 
+  val steering = source.resolve("pilotage.dat")
+  val mesh = source.resolve("work.may")
+  val out = source.resolve("file.out")
   val experimentDirectory = "C:\\Users\\Jan\\Desktop\\computed.txt"
   //val experimentDirectory = "C:\\Users\\Jan\\Desktop\\mgr\\HA000490.D01"
-  val experiment = DataFile(new java.io.File(experimentDirectory), temperature = 1000, steering = "pilotage.dat")
-  val function = FitnessFunction(fx2Dir, source, system, experiment, experiment)
+  val experiment = DataFile(new java.io.File(experimentDirectory))
+  val function = FitnessFunction(fx2Dir, mesh, out, steering, 1000, system, experiment)
 }

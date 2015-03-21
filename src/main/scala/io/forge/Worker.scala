@@ -15,9 +15,9 @@ class Worker
     with ActorLogging {
 
   def receive = {
-    case Job(forge, source, args) =>
-      environment = environment(forge, source, args)
-      log.debug(s"$uuid| start job from:$source")
+    case Job(forge, parameters) =>
+      environment = environment(forge, parameters)
+      log.debug(s"$uuid| start job for:$environment)")
       val builder = processBuilder(forge, environment)
       log.debug(s"$uuid| prepared job for forge:$forge")
       val io = processIO

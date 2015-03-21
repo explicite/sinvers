@@ -16,11 +16,9 @@ class FitnessChart extends Actor with ActorLogging {
     label = "fitness"
   }
 
-  private val alpha = new XYChart.Series[Number, Number] {
-    name = "alpha wolf"
-  }
+  private val series = new XYChart.Series[Number, Number] {}
 
-  private val chart = new LineChart[Number, Number](xAxis, yAxis, ObservableBuffer(alpha)) {
+  private val chart = new LineChart[Number, Number](xAxis, yAxis, ObservableBuffer(series)) {
     title = "Fitness monitoring for GWO"
     maxWidth = 750
     legendVisible = false
@@ -33,7 +31,7 @@ class FitnessChart extends Actor with ActorLogging {
   def toIncrement: Receive = {
     case Iteration(fitness: Double) =>
       if (Double.MaxValue > fitness) {
-        alpha.getData.add(XYChart.Data[Number, Number](0, fitness))
+        series.getData.add(XYChart.Data[Number, Number](0, fitness))
       }
       context become incremented(1)
   }
@@ -41,8 +39,8 @@ class FitnessChart extends Actor with ActorLogging {
   def incremented(iteration: Int): Receive = {
     case Iteration(fitness) =>
       if (Double.MaxValue > fitness) {
-        alpha.getData.add(XYChart.Data[Number, Number](iteration, fitness))
-        if (alpha.getData.size() > 15) alpha.getData.remove(0)
+        series.getData.add(XYChart.Data[Number, Number](iteration, fitness))
+        if (series.getData.size() > 15) series.getData.remove(0)
       }
       context become incremented(iteration + 1)
 

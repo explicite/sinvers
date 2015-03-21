@@ -4,6 +4,7 @@ import java.nio.file.{ Files, Path }
 import java.util.UUID
 
 import io.DONArgs
+import io.forge.Protocol.Parameters
 import regex.Parser
 import util.Util
 
@@ -23,16 +24,16 @@ trait Environment extends Parser {
   val DON = "sym.don"
   val MESH = "work.may"
   val OUT = "file.out"
+  val STEERING = "steering.dat"
 
-  def environment(forge: Path, source: Path, args: DONArgs): Path = {
+  def environment(forge: Path, parameters: Parameters): Path = {
     uuid = UUID.randomUUID().toString
-    val environment = source.resolve(uuid)
-    Files.createDirectory(environment)
+    val environment = Files.createTempDirectory(uuid)
     //coping needed files
-    createDon(environment.resolve(DON), args)
-    Util.copy(source.resolve(args.steering), environment.resolve(args.steering))
-    Util.copy(source.resolve(MESH), environment.resolve(MESH))
-    Util.copy(source.resolve(OUT), environment.resolve(OUT))
+    createDon(environment.resolve(DON), parameters)
+    Util.copy(parameters.steering, environment.resolve(STEERING))
+    Util.copy(parameters.mesh, environment.resolve(MESH))
+    Util.copy(parameters.out, environment.resolve(OUT))
 
     environment
   }
@@ -41,7 +42,7 @@ trait Environment extends Parser {
     Process(
       Seq(s"${forge.resolve("bin/xf2_p1.exe")}", DON),
       environment.toFile,
-      "PP2D_DIR" -> forge.toAbsolutePath.toString,
+      "PP2D_DIR" -> forge.toString,
       "FORGE2_IO" -> "BIG_ENDIAN",
       "lang" -> "eng",
       "WORK_DIR" -> environment.toString
@@ -66,7 +67,7 @@ trait Environment extends Parser {
     Util.delete(source)
   }
 
-  private def createDon(target: Path, args: DONArgs): Path = {
+  private def createDon(target: Path, args: Parameters): Path = {
     val don =
       s""".FICHIER\nFOUT = $OUT
           |FMAY = $MESH
@@ -102,7 +103,7 @@ trait Environment extends Parser {
           |epsilon = 8.800000e-001
           |.FIN THERMIQUE
           |.PILOTAGE
-          |File = ${args.steering},
+          |File = $STEERING,
           |hauteur actuelle = 12.00,
           |hauteur finale = 7.522
           |.FIN PILOTAGE
