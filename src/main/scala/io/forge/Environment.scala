@@ -1,34 +1,22 @@
 package io.forge
 
 import java.nio.file.{ Files, Path }
-import java.util.UUID
 
-import io.DONArgs
 import io.forge.Protocol.Parameters
 import regex.Parser
 import util.Util
 
-import scala.collection.mutable.ListBuffer
-import scala.sys.process.{ Process, ProcessBuilder, ProcessIO }
+import scala.sys.process.{ Process, ProcessBuilder }
 
 trait Environment extends Parser {
-  protected val time = ListBuffer[Double]()
-  protected val load = ListBuffer[Double]()
-  protected val height = ListBuffer[Double]()
-  protected val velocity = ListBuffer[Double]()
-
-  var environment: Path = null
-  var process: Process = null
-  var uuid: String = null
 
   val DON = "sym.don"
   val MESH = "work.may"
   val OUT = "file.out"
   val STEERING = "steering.dat"
 
-  def environment(forge: Path, parameters: Parameters): Path = {
-    uuid = UUID.randomUUID().toString
-    val environment = Files.createTempDirectory(uuid)
+  def createEnvironment(forge: Path, parameters: Parameters): Path = {
+    val environment = Files.createTempDirectory("sinvers")
     //coping needed files
     createDon(environment.resolve(DON), parameters)
     Util.copy(parameters.steering, environment.resolve(STEERING))
@@ -49,20 +37,7 @@ trait Environment extends Parser {
     )
   }
 
-  def processIO = new ProcessIO(
-    in => (),
-    data => try {
-      scala.io.Source.fromInputStream(data).getLines().foreach(processDataLine)
-    } finally {
-      data.close()
-    },
-    error => error.close()
-  )
-
   protected def clean(source: Path): Path = {
-    if (process != null)
-      process.destroy()
-
     Thread.sleep(200)
     Util.delete(source)
   }
@@ -104,32 +79,13 @@ trait Environment extends Parser {
           |.FIN THERMIQUE
           |.PILOTAGE
           |File = $STEERING,
-          |hauteur actuelle = 12.00,
-          |hauteur finale = 7.522
-          |.FIN PILOTAGE
-          |.EXECUTION
-          |Sans Visualisation
-          |.FIN EXECUTION""".stripMargin
+                             |hauteur actuelle = 12.00,
+                             |hauteur finale = 7.522
+                             |.FIN PILOTAGE
+                             |.EXECUTION
+                             |Sans Visualisation
+                             |.FIN EXECUTION""".stripMargin
     Util.write(target, don.getBytes)
-  }
-
-  private def processDataLine(line: String): Unit = {
-    IncrementTimeRegex findFirstIn line match {
-      case Some(IncrementTimeRegex(_, mantissa, exponent)) => time += formatDouble(mantissa, exponent)
-      case None => Unit
-    }
-    VirtualLoadRegex findFirstIn line match {
-      case Some(VirtualLoadRegex(_, mantissa, exponent)) => load += formatDouble(mantissa, exponent)
-      case None => Unit
-    }
-    HeightRegex findFirstIn line match {
-      case Some(HeightRegex(_, mantissa, exponent)) => height += formatDouble(mantissa, exponent)
-      case None                                     => Unit
-    }
-    VelocityRegex findFirstIn line match {
-      case Some(VelocityRegex(_, mantissa, exponent)) => velocity += formatDouble(mantissa, exponent)
-      case None                                       => Unit
-    }
   }
 
 }

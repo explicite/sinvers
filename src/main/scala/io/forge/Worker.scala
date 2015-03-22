@@ -16,37 +16,39 @@ class Worker
 
   def receive = {
     case Job(forge, parameters) =>
-      environment = environment(forge, parameters)
-      log.debug(s"$uuid| start job for:$environment)")
+      val environment = createEnvironment(forge, parameters)
       val builder = processBuilder(forge, environment)
-      log.debug(s"$uuid| prepared job for forge:$forge")
-      val io = processIO
-      process = builder.run(io)
-      log.debug(s"$uuid| forge process created:$process")
-      val feature = Future(body = process.exitValue() match {
-        case 0 =>
-          log.debug(s"$uuid| end of computation")
-          clean(environment)
-          Data(time.toList, load.toList, height.toList, velocity.toList)
-      })
-
+      val feature = Future(process(builder.lineStream_!))
       val result = Try(Await.result(feature, 30 seconds)) match {
-        case Success(data) => data
-        case Failure(err) =>
-          clean(environment)
-          Data.empty
+        case Success((time, load, height, velocity)) => Data(time, load, height, velocity)
+        case Failure(err)                            => Data.empty
       }
-
+      clean(environment)
       sender() ! result
   }
 
-  @throws[Exception](classOf[Exception])
-  override def postStop(): Unit = {
-    log.debug(s"$environment| destroy after stop and cleanup")
-    if (process != null) {
-      process.destroy()
+  def process(stream: Stream[String]): (List[Double], List[Double], List[Double], List[Double]) = {
+    stream.foldLeft((List.empty[Double], List.empty[Double], List.empty[Double], List.empty[Double])) {
+      case ((time, load, height, velocity), line) =>
+        val accTime = IncrementTimeRegex findFirstIn line match {
+          case Some(IncrementTimeRegex(_, mantissa, exponent)) => time :+ formatDouble(mantissa, exponent)
+          case None => time
+        }
+        val accLoad = VirtualLoadRegex findFirstIn line match {
+          case Some(VirtualLoadRegex(_, mantissa, exponent)) => load :+ formatDouble(mantissa, exponent)
+          case None => load
+        }
+        val accHeight = HeightRegex findFirstIn line match {
+          case Some(HeightRegex(_, mantissa, exponent)) => height :+ formatDouble(mantissa, exponent)
+          case None                                     => height
+        }
+        val accVelocity = VelocityRegex findFirstIn line match {
+          case Some(VelocityRegex(_, mantissa, exponent)) => velocity :+ formatDouble(mantissa, exponent)
+          case None                                       => velocity
+        }
+        (accTime, accLoad, accHeight, accVelocity)
     }
-    super.postStop()
   }
+
 }
 

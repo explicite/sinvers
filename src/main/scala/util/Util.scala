@@ -38,7 +38,7 @@ object Util {
       target
     } match {
       case Success(path) => path
-      case Failure(err)  => throw err
+      case Failure(err)  => target
     }
   }
 
