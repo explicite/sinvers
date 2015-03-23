@@ -4,9 +4,6 @@ import akka.actor.{ Actor, ActorLogging }
 import data.Data
 import io.forge.Protocol.Job
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
-import scala.concurrent.{ Await, Future }
 import scala.util.{ Failure, Success, Try }
 
 class Worker
@@ -18,8 +15,7 @@ class Worker
     case Job(forge, parameters) =>
       val environment = createEnvironment(forge, parameters)
       val builder = processBuilder(forge, environment)
-      val feature = Future(process(builder.lineStream_!))
-      val result = Try(Await.result(feature, 30 seconds)) match {
+      val result = Try(process(builder.lineStream_!(silence))) match {
         case Success((time, load, height, velocity)) => Data(time, load, height, velocity)
         case Failure(err)                            => Data.empty
       }

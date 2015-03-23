@@ -6,7 +6,7 @@ import io.forge.Protocol.Parameters
 import regex.Parser
 import util.Util
 
-import scala.sys.process.{ Process, ProcessBuilder }
+import scala.sys.process.{ ProcessLogger, Process, ProcessBuilder }
 
 trait Environment extends Parser {
 
@@ -14,6 +14,8 @@ trait Environment extends Parser {
   val MESH = "work.may"
   val OUT = "file.out"
   val STEERING = "steering.dat"
+
+  val silence = ProcessLogger((o: String) => (), (e: String) => ())
 
   def createEnvironment(forge: Path, parameters: Parameters): Path = {
     val environment = Files.createTempDirectory("sinvers")
