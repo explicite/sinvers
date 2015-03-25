@@ -5,7 +5,7 @@ import java.nio.file.Path
 import akka.actor.{ ActorSystem, Props }
 import akka.pattern.ask
 import akka.util.Timeout
-import data.{ Data, DataFile }
+import data.{ DataContainer, DataFile }
 import io.forge.Protocol.{ Job, Parameters }
 import io.forge.Supervisor
 import math._
@@ -58,7 +58,7 @@ case class FitnessFunction(forge: Path,
   //return fitness for current context
   def fitness(args: Seq[Double]): Double = {
     val parameters = Parameters(mesh, out, steering, temperature, HSArgs(args))
-    val request = (supervisor ? Job(forge, parameters)).mapTo[Data]
+    val request = (supervisor ? Job(forge, parameters)).mapTo[DataContainer]
 
     val result = Await.result(request, timeout.duration)
     val fitness = result.fit(interpolator, interval)

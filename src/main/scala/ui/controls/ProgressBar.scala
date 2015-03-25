@@ -1,5 +1,7 @@
 package ui.controls
 
+import java.time.Duration
+
 import akka.actor.{ Actor, ActorLogging }
 
 import scala.language.postfixOps
@@ -36,8 +38,8 @@ class Progress extends Actor with ActorLogging {
       eta.text = {
         val iterations = max * progressBar.progress.value
         val performance = ((stamp - start) / 1e9) / iterations
-        val duration = (max - iterations) * performance
-        s"ETA: ${formatter(duration)} s performance: ${formatter(1 / performance)} it/s"
+        val duration = Duration.ofSeconds(((max - iterations) * performance).toLong)
+        s"ETA: $duration s performance: ${formatter(1 / performance)} it/s"
       }
     case Reset =>
       progressBar.setProgress(0)

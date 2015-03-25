@@ -1,7 +1,7 @@
 package io.forge
 
 import akka.actor.{ Actor, ActorLogging }
-import data.Data
+import data.DataContainer
 import io.forge.Protocol.Job
 
 import scala.util.{ Failure, Success, Try }
@@ -16,8 +16,8 @@ class Worker
       val environment = createEnvironment(forge, parameters)
       val builder = processBuilder(forge, environment)
       val result = Try(process(builder.lineStream_!(silence))) match {
-        case Success((time, load, height, velocity)) => Data(time, load, height, velocity)
-        case Failure(err)                            => Data.empty
+        case Success((time, load, height, velocity)) => DataContainer(time, load, height, velocity)
+        case Failure(err)                            => DataContainer.empty
       }
       clean(environment)
       sender() ! result

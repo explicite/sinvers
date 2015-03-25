@@ -1,6 +1,6 @@
 package util
 
-import data.Data
+import data.DataContainer
 
 object Persist {
   def in(f: java.io.File)(op: java.io.PrintWriter => Unit) = {
@@ -8,7 +8,7 @@ object Persist {
     try op(p) finally p.close()
   }
 
-  def data(data: Data, file: java.io.File) = in(file) { printWriter =>
+  def data(data: DataContainer, file: java.io.File) = in(file) { printWriter =>
     val toPrint = (data.time zip data.force zip data.jaw zip data.velocity).map {
       case (((t, f), j), v) => (t, f, j, v)
     }.reverse.map { case (t, f, j, v) => s"$v $f $j $t 0.0 0.0 0.0 0.0 0.0" }

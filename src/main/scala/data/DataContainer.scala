@@ -8,7 +8,7 @@ import opt.Interval
 import scala.io.Source
 import scala.language.implicitConversions
 
-case class Data(time: Seq[Double],
+case class DataContainer(time: Seq[Double],
     force: Seq[Double],
     jaw: Seq[Double],
     velocity: Seq[Double]) {
@@ -61,7 +61,7 @@ case class Data(time: Seq[Double],
   }
 }
 
-object Data {
+object DataContainer {
 
   implicit class Unzip4[A, B, C, D](val xs: List[(A, B, C, D)]) extends AnyVal {
     def unzip4: (List[A], List[B], List[C], List[D]) = xs.foldRight[(List[A], List[B], List[C], List[D])]((Nil, Nil, Nil, Nil)) { (x, res) =>
@@ -70,12 +70,12 @@ object Data {
     }
   }
 
-  implicit def ToupleToData(sx: Seq[(Double, Double, Double, Double)]): Data = {
+  implicit def ToupleToData(sx: Seq[(Double, Double, Double, Double)]): DataContainer = {
     val (time, force, jaw, velocity) = sx.toList.unzip4
-    Data(time, force, jaw, velocity)
+    DataContainer(time, force, jaw, velocity)
   }
 
-  def apply(file: File): Data = {
+  def apply(file: File): DataContainer = {
     val source = Source.fromFile(file)
 
     val lines = source.nonEmpty match {
@@ -92,14 +92,14 @@ object Data {
       }
     }.toList.unzip4
 
-    Data(time, force, jaw, velocity)
+    DataContainer(time, force, jaw, velocity)
   }
 
-  val empty = Data(Seq.empty, Seq.empty, Seq.empty, Seq.empty)
+  val empty = DataContainer(Seq.empty, Seq.empty, Seq.empty, Seq.empty)
 
 }
 
 case class DataFile(file: File) {
-  val current = Data(file)
+  val current = DataContainer(file)
 }
 
