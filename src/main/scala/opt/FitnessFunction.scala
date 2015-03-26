@@ -32,12 +32,6 @@ case class FitnessFunction(forge: Path,
 
   val random = new XORShiftRandom()
 
-  val steeringDef: Seq[(Double, Double)] = {
-    val velocityStep = data.current.velocity.scan(0d)(_ + _).tail
-    val jaw = data.current.jaw
-    velocityStep.zip(jaw)
-  }
-
   val interval = {
     val max = 12 + 0.1
     val min = 7.522 - 0.1

@@ -12,18 +12,17 @@ case class DataContainer(time: Seq[Double],
     force: Seq[Double],
     jaw: Seq[Double],
     velocity: Seq[Double]) {
-  private val KGF = 1016.0469053138122
 
   def valid(interval: Interval): Boolean = force.size >= 30
 
+  def steering(maxJaw: Double): Seq[(Double, Double)] = {
+    time.scan(0d)(_ + _).zip(maxJaw +: jaw.map(_ + maxJaw))
+  }
+
   def fit(interpolator: PolynomialSplineFunction, interval: Interval): Double = {
     if (valid(interval)) {
-      val computedForce = force //.map(_ * KGF)
-      val computedJaw = jaw
-      val (forceToInter, jawToInter) = sections(computedForce.zip(computedJaw), 5).unzip
+      val (forceToInter, jawToInter) = sections(force.zip(jaw), 5).unzip
       val interpolatedForce = jawToInter.map(interpolator.apply)
-      //save(new File("data_force.txt"))
-      //forceToInter.zip(interpolatedForce).map { case (c, ii) => scala.math.pow(scala.math.E, math.sqrt((c - ii) * (c - ii)).toDouble) }.sum / forceToInter.size
       val result = forceToInter.zip(interpolatedForce).map {
         case (c, ii) => scala.math.pow(scala.math.E, math.sqrt {
           (c - ii) * (c - ii) + 1
@@ -36,7 +35,7 @@ case class DataContainer(time: Seq[Double],
     }
   }
 
-  def sections(sx: Seq[(Double, Double)], slices: Int): List[(Double, Double)] = {
+  private def sections(sx: Seq[(Double, Double)], slices: Int): List[(Double, Double)] = {
     val (_, jaw) = sx.unzip
     val min = jaw.min
     val max = jaw.max
@@ -59,6 +58,16 @@ case class DataContainer(time: Seq[Double],
         toPrint.foreach(printWriter.println)
     }
   }
+
+  def slice(interval: Interval): DataContainer = {
+    (time zip force zip jaw zip velocity).map {
+      case (((t, f), j), v) => (t, f, j, v)
+    }.filter {
+      case (t, f, j, v) =>
+        j >= interval.min && j <= interval.max
+    }
+  }
+
 }
 
 object DataContainer {
