@@ -9,9 +9,9 @@ object Persist {
   }
 
   def data(data: DataContainer, file: java.io.File) = in(file) { printWriter =>
-    val toPrint = (data.time zip data.force zip data.jaw zip data.velocity).map {
+    val toPrint = (data.time zip data.force zip data.jaw zip data.ptemp).map {
       case (((t, f), j), v) => (t, f, j, v)
-    }.reverse.map { case (t, f, j, v) => s"$v $f $j $t 0.0 0.0 0.0 0.0 0.0" }
+    }.reverseMap { case (t, f, j, v) => s"$v $f $j $t 0.0 0.0 0.0 0.0 0.0" }
     toPrint.foreach(printWriter.println)
   }
 

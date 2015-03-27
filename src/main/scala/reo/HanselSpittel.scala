@@ -19,7 +19,7 @@ import scala.io.Source
  * @param m7 sensitivity of the deformation of the material
  * @param m8 the temperature dependence of strain rate
  * @param m9 the temperature coefficient of the material of the impact
- * @param epsSs
+ * @param epsSs ???
  */
 case class HSArgs(a1: Double = 0,
     m1: Double = 0,

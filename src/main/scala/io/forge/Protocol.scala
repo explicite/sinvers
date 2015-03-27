@@ -8,8 +8,6 @@ object Protocol {
 
   case class Job(forge: Path, parameters: Parameters)
 
-  case class Result(time: List[Double], load: List[Double], height: List[Double], velocity: List[Double])
-
   case class Restart(job: Job)
 
   case object Stop

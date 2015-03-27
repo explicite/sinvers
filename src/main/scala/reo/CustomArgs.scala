@@ -16,6 +16,6 @@ case class CustomArgs(n: Double = 0.25,
 object CustomArgs {
   def apply(args: Seq[Double]): CustomArgs = {
     assert(args.size == 2, "not satisfied numbers of arguments")
-    CustomArgs(args(0), args(1))
+    CustomArgs(args.head, args(1))
   }
 }

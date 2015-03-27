@@ -2,7 +2,7 @@ package opt
 
 import java.nio.file.Paths
 
-import data.DataFile
+import data.DataContainer
 import test.BaseTest
 
 class SimulationTest extends BaseTest {
@@ -12,10 +12,13 @@ class SimulationTest extends BaseTest {
     val fx2Dir = Paths.get("C:\\Users\\Jan\\Desktop\\Forge2-V3.0")
     val source = Paths.get("C:\\Users\\Jan\\Desktop\\sym")
 
+    val steering = source.resolve("pilotage.dat")
+    val mesh = source.resolve("work.may")
+    val out = source.resolve("file.out")
     val experimentDirectory = "C:\\Users\\Jan\\Desktop\\mgr\\HA000490.D01"
 
-    val experiment = DataFile(new java.io.File(experimentDirectory), temperature = 1000, steering = "pilotage.dat")
-    val function = FitnessFunction(fx2Dir, source, system, experiment)
+    val experiment = DataContainer(new java.io.File(experimentDirectory))
+    val function = FitnessFunction(fx2Dir, mesh, out, steering, 1000, system, experiment)
     val bounds = Seq(
       StaticInterval(862908.976, 862908.976), //a1 ok
       StaticInterval(-0.00092, -0.00092), //m1 ok

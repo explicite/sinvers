@@ -8,7 +8,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
 public class FileManipulator {
-    private static SimpleFileVisitor<Path> visitor = new SimpleFileVisitor<Path>() {
+    private static final SimpleFileVisitor<Path> visitor = new SimpleFileVisitor<Path>() {
 
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {

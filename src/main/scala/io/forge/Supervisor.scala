@@ -6,6 +6,7 @@ import akka.routing.{ ActorRefRoutee, RoundRobinRoutingLogic, Router }
 import io.forge.Protocol._
 
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 class Supervisor
     extends Actor

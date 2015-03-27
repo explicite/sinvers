@@ -4,10 +4,10 @@ package object math {
     val maxIterations = x.mc.getPrecision + 1
 
     val guessSteam: Stream[BigDecimal] = newtonRaphsonApproximations(x).take(maxIterations)
-    val exactMatch: Option[Stream[BigDecimal]] = guessSteam.sliding(2).find(a => a(0) == a(1))
+    val exactMatch: Option[Stream[BigDecimal]] = guessSteam.sliding(2).find(a => a.head == a(1))
     val root: Stream[BigDecimal] = exactMatch.getOrElse(Stream(guessSteam.last))
 
-    root(0)
+    root.head
   }
 
   /**
