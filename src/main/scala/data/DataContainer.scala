@@ -17,7 +17,9 @@ case class DataContainer(time: Seq[Double],
     stress: Seq[Double],
     stroke: Seq[Double],
     tc1: Seq[Double],
-    tc2: Seq[Double]) {
+    tc2: Seq[Double]) extends Container {
+
+  type T = DataContainer
 
   def steering(maxJaw: Double): Seq[(Double, Double)] = {
     time.scan(0d)(_ + _).zip(maxJaw +: jaw.map(_ + maxJaw))
@@ -43,7 +45,7 @@ case class DataContainer(time: Seq[Double],
     copy(force = KZ(force, k, m))
   }
 
-  val interpolator = {
+  val interpolator: PolynomialSplineFunction = {
     val (filteredForce, filteredJaw) = force.zip(jaw).groupBy(_._2).map(_._2.head).toSeq.sortBy(_._2).unzip
     Interpolator.splineInterpolate(filteredJaw.toArray, filteredForce.toArray)
   }
@@ -61,7 +63,7 @@ object DataContainer {
       }
   }
 
-  implicit def ToupleToData(sx: Seq[(Double, Double, Double, Double, Double, Double, Double, Double, Double)]): DataContainer = {
+  implicit def ToupleToDataContainer(sx: Seq[(Double, Double, Double, Double, Double, Double, Double, Double, Double)]): DataContainer = {
     val (time, force, jaw, ptemp, strain, stress, stroke, tc1, tc2) = sx.toList.unzip9
     DataContainer(time, force, jaw, ptemp, strain, stress, stroke, tc1, tc2)
   }

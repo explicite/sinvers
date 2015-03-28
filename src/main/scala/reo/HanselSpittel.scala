@@ -4,7 +4,7 @@ import java.io.File
 
 import io.DON
 import regex.Parser
-
+import util.Util.formatter
 import scala.io.Source
 
 /**
@@ -32,8 +32,6 @@ case class HSArgs(a1: Double = 0,
     m8: Double = 0,
     m9: Double = 0,
     epsSs: Double = 0) {
-
-  def formatter(d: Double): String = new java.text.DecimalFormat("0.##############E0").format(d)
 
   override def toString: String = {
     s"Thermoecroui : hanselspittelnb1,\na1=${formatter(a1)},\nm1=${formatter(m1)},\nm2=${formatter(m2)},\nm3=${formatter(m3)},\nm4=${formatter(m4)},\nm5=${formatter(m5)},\nm6=${formatter(m6)},\nm7=${formatter(m7)},\nm8=${formatter(m8)},\nm9=${formatter(m9)},\neps_ss=${formatter(epsSs)}\n"
