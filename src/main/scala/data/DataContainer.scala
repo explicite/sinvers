@@ -1,10 +1,12 @@
 package data
 
 import java.io.File
+import java.nio.file.{ Files, Path }
 
 import math.{ Interpolator, PolynomialSplineFunction }
 import opt.Interval
 import util.KZ
+import util.Util.{ scienceFormatter, trimmedFormatter, write }
 
 import scala.io.Source
 import scala.language.implicitConversions
@@ -21,14 +23,26 @@ case class DataContainer(time: Seq[Double],
 
   type T = DataContainer
 
-  def steering(maxJaw: Double): Seq[(Double, Double)] = {
-    time.scan(0d)(_ + _).zip(maxJaw +: jaw.map(_ + maxJaw))
+  def steering(maxJaw: Double): Path = {
+    val file = Files.createTempFile("sterring", "dat")
+    write(file, steeringData(maxJaw))
+  }
+
+  private def steeringData(maxJaw: Double): Array[Byte] = {
+    val droppedTime = time.drop(2984)
+    val droppedJaw = jaw.drop(2984)
+    droppedTime.map(_ - droppedTime.head).zip(maxJaw +: droppedJaw.map(_ + maxJaw)).map {
+      case (t, j) => s"${trimmedFormatter(t)}, ${trimmedFormatter(j)}"
+    }.mkString("\n").getBytes
   }
 
   def toPrint: Seq[String] = {
-    val result = (time zip force zip jaw zip ptemp).map {
-      case (((t, f), j), v) => (t, f, j, v)
-    }.reverseMap { case (t, f, j, v) => s"$v\t$f\t$j\t$t\t0.0\t0.0\t0.0\t0.0\t0.0" }
+    val result = (time zip force zip jaw zip ptemp zip strain zip stress zip stroke zip tc1 zip tc2).map {
+      case ((((((((t, f), j), p), stn), sts), ste), t1), t2) => (t, f, j, p, stn, sts, ste, t1, t2)
+    }.reverseMap {
+      case (t, f, j, p, stn, sts, ste, t1, t2) =>
+        s"${scienceFormatter(t)}\t${scienceFormatter(f)}\t${scienceFormatter(j)}\t${scienceFormatter(p)}\t${scienceFormatter(stn)}\t${scienceFormatter(sts)}\t${scienceFormatter(ste)}\t${scienceFormatter(t1)}\t${scienceFormatter(t2)}"
+    }
     "Time(sec)\tForce(kgf)\tJaw(mm)\tPtemp(C)\tStrain\tStress(MPa)\tStroke(mm)\tTC1(C)\tTC2(C)" +: result
   }
 
@@ -45,9 +59,11 @@ case class DataContainer(time: Seq[Double],
     copy(force = KZ(force, k, m))
   }
 
-  val interpolator: PolynomialSplineFunction = {
+  def interpolator(conversion: Force, maxJaw: Double): PolynomialSplineFunction = {
     val (filteredForce, filteredJaw) = force.zip(jaw).groupBy(_._2).map(_._2.head).toSeq.sortBy(_._2).unzip
-    Interpolator.splineInterpolate(filteredJaw.toArray, filteredForce.toArray)
+    val convertedForce = filteredForce.map(conversion.toTones)
+    val convertedJaw = filteredJaw.map(_ + maxJaw)
+    Interpolator.splineInterpolate(convertedJaw.toArray, convertedForce.toArray)
   }
 
 }
@@ -76,7 +92,7 @@ object DataContainer {
       case false => throw new Exception(s"Empty data file:${file.getName}")
     }
 
-    val (time, force, jaw, ptemp, strain, stress, stroke, tc1, tc2y) = {
+    val (time, force, jaw, ptemp, strain, stress, stroke, tc1, tc2) = {
       for (line <- lines) yield {
         line.split("\\s+") match {
           case Array(t, f, j, p, stn, sts, ste, t1, t2) => (t.toDouble, f.toDouble, j.toDouble, p.toDouble, stn.toDouble, sts.toDouble, ste.toDouble, t1.toDouble, t2.toDouble)
@@ -85,7 +101,7 @@ object DataContainer {
       }
     }.toList.unzip9
 
-    DataContainer(time, force, jaw, ptemp, strain, stress, stroke, tc1, tc2y)
+    DataContainer(time, force, jaw, ptemp, strain, stress, stroke, tc1, tc2)
   }
 
 }

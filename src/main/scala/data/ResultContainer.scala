@@ -1,8 +1,9 @@
 package data
 
-import math.{ Interpolator, PolynomialSplineFunction }
+import math.PolynomialSplineFunction
 import opt.Interval
 import util.KZ
+import util.Util.scienceFormatter
 
 import scala.language.implicitConversions
 
@@ -13,8 +14,8 @@ case class ResultContainer(time: Seq[Double],
 
   type T = ResultContainer
 
-  def fit(interpolator: PolynomialSplineFunction, interval: Interval): Double = {
-    if (valid(interval)) {
+  def fit(interpolator: PolynomialSplineFunction): Double = {
+    if (force.size >= 30) {
       val (forceToInter, jawToInter) = sections(force.zip(jaw), 5).unzip
       val interpolatedForce = jawToInter.map(interpolator.apply)
       val result = forceToInter.zip(interpolatedForce).map {
@@ -29,12 +30,10 @@ case class ResultContainer(time: Seq[Double],
     }
   }
 
-  def valid(interval: Interval): Boolean = force.size >= 30
-
   def toPrint: Seq[String] = {
     val result = (time zip force zip jaw zip velocity).map {
       case (((t, f), j), v) => (t, f, j, v)
-    }.reverseMap { case (t, f, j, v) => s"$v\t$f\t$j\t$v" }
+    }.reverseMap { case (t, f, j, v) => s"${scienceFormatter(v)}\t${scienceFormatter(f)}\t${scienceFormatter(j)}\t${scienceFormatter(v)}" }
     "Time(sec)\tForce(kgf)\tJaw(mm)\tvelocity(mm/s)" +: result
   }
 
@@ -49,11 +48,6 @@ case class ResultContainer(time: Seq[Double],
 
   def filter(k: Double, m: Int): ResultContainer = {
     copy(force = KZ(force, k, m))
-  }
-
-  val interpolator: PolynomialSplineFunction = {
-    val (filteredForce, filteredJaw) = force.zip(jaw).groupBy(_._2).map(_._2.head).toSeq.sortBy(_._2).unzip
-    Interpolator.splineInterpolate(filteredJaw.toArray, filteredForce.toArray)
   }
 
   private def sections(sx: Seq[(Double, Double)], slices: Int): List[(Double, Double)] = {

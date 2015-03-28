@@ -4,7 +4,7 @@ import java.io.File
 
 import io.DON
 import regex.Parser
-import util.Util.formatter
+import util.Util.scienceFormatter
 import scala.io.Source
 
 /**
@@ -34,7 +34,7 @@ case class HSArgs(a1: Double = 0,
     epsSs: Double = 0) {
 
   override def toString: String = {
-    s"Thermoecroui : hanselspittelnb1,\na1=${formatter(a1)},\nm1=${formatter(m1)},\nm2=${formatter(m2)},\nm3=${formatter(m3)},\nm4=${formatter(m4)},\nm5=${formatter(m5)},\nm6=${formatter(m6)},\nm7=${formatter(m7)},\nm8=${formatter(m8)},\nm9=${formatter(m9)},\neps_ss=${formatter(epsSs)}\n"
+    s"Thermoecroui : hanselspittelnb1,\na1=${scienceFormatter(a1)},\nm1=${scienceFormatter(m1)},\nm2=${scienceFormatter(m2)},\nm3=${scienceFormatter(m3)},\nm4=${scienceFormatter(m4)},\nm5=${scienceFormatter(m5)},\nm6=${scienceFormatter(m6)},\nm7=${scienceFormatter(m7)},\nm8=${scienceFormatter(m8)},\nm9=${scienceFormatter(m9)},\neps_ss=${scienceFormatter(epsSs)}\n"
   }
 }
 

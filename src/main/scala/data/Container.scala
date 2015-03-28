@@ -12,5 +12,4 @@ trait Container {
 
   def filter(k: Double, m: Int): T
 
-  val interpolator: PolynomialSplineFunction
 }

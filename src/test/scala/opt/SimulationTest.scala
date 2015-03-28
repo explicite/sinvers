@@ -2,7 +2,7 @@ package opt
 
 import java.nio.file.Paths
 
-import data.DataContainer
+import data.{KGF, DataContainer}
 import test.BaseTest
 
 class SimulationTest extends BaseTest {
@@ -18,7 +18,7 @@ class SimulationTest extends BaseTest {
     val experimentDirectory = "C:\\Users\\Jan\\Desktop\\mgr\\HA000490.D01"
 
     val experiment = DataContainer(new java.io.File(experimentDirectory))
-    val function = FitnessFunction(fx2Dir, mesh, out, steering, 1000, system, experiment)
+    val function = FitnessFunction(fx2Dir, mesh, out, 1000, system, experiment, KGF)
     val bounds = Seq(
       StaticInterval(862908.976, 862908.976), //a1 ok
       StaticInterval(-0.00092, -0.00092), //m1 ok

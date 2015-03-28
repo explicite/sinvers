@@ -61,5 +61,6 @@ object Util {
     result
   }
 
-  def formatter(d: Double): String = new java.text.DecimalFormat("0.##############E0").format(d)
+  def scienceFormatter(d: Double): String = new java.text.DecimalFormat("0.##############E0").format(d)
+  def trimmedFormatter(d: Double): String = new java.text.DecimalFormat("0.#####").format(d)
 }

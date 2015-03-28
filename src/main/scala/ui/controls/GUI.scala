@@ -25,9 +25,5 @@ object GUI {
     }
   }
 
-  def printEvent(eventStr: String)() {
-    println(eventStr)
-  }
-
   stage.show()
 }

@@ -1,7 +1,7 @@
 package io
 
 import akka.actor.{ ActorSystem, Props }
-import data.DataContainer
+import data.{ KGF, DataContainer }
 import opt.FitnessFunction
 import ui.controls.{ FitnessChart, Progress }
 
@@ -18,8 +18,7 @@ trait Application {
   val steering = source.resolve("pilotage.dat")
   val mesh = source.resolve("work.may")
   val out = source.resolve("file.out")
-  val experimentDirectory = "C:\\Users\\Jan\\Desktop\\computed.txt"
-  //val experimentDirectory = "C:\\Users\\Jan\\Desktop\\mgr\\HA000490.D01"
+  val experimentDirectory = "C:\\Users\\Jan\\Desktop\\mgr\\HA000490.D01"
   val experiment = DataContainer(new java.io.File(experimentDirectory))
-  val function = FitnessFunction(fx2Dir, mesh, out, steering, 1000, system, experiment)
+  val function = FitnessFunction(fx2Dir, mesh, out, 1000, system, experiment, KGF)
 }

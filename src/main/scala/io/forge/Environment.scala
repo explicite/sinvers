@@ -60,7 +60,7 @@ trait Environment extends Parser {
           |${args.hs}
           |Coeff Poisson = 3.000000e-001
           |Module Young = 2.000000e+008
-          |Temp Init = ${Util.formatter(args.temperature)}
+          |Temp Init = ${Util.scienceFormatter(args.temperature)}
           |Gravity
           |Inertie
           |Outil 0: Coulomb,
@@ -81,12 +81,12 @@ trait Environment extends Parser {
           |.FIN THERMIQUE
           |.PILOTAGE
           |File = $STEERING,
-                             |hauteur actuelle = 12.00,
-                             |hauteur finale = 7.522
-                             |.FIN PILOTAGE
-                             |.EXECUTION
-                             |Sans Visualisation
-                             |.FIN EXECUTION""".stripMargin
+          |hauteur actuelle = 12.00,
+          |hauteur finale = 7.522
+          |.FIN PILOTAGE
+          |.EXECUTION
+          |Sans Visualisation
+          |.FIN EXECUTION""".stripMargin
     Util.write(target, don.getBytes)
   }
 
