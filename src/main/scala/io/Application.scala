@@ -1,16 +1,19 @@
 package io
 
-import akka.actor.{ ActorSystem, Props }
-import data.{ KGF, DataContainer }
-import opt.FitnessFunction
-import ui.controls.{ FitnessChart, Progress }
-
 import java.nio.file.Paths
+
+import akka.actor.{ ActorSystem, Props }
+import data.{ DataContainer, KGF }
+import io.forge.Supervisor
+import opt.FitnessFunction
+import ui.controls.GUI
 
 trait Application {
   val system = ActorSystem("sinvers")
-  val progress = system.actorOf(Props[Progress].withDispatcher("scalafx-dispatcher"), "progress-bar")
-  val chart = system.actorOf(Props[FitnessChart].withDispatcher("scalafx-dispatcher"), "fitness-chart")
+  val supervisor = system.actorOf(Props[Supervisor], "supervisor")
+  val gui = system.actorOf(Props[GUI], "gui")
+  val progress = system.actorSelection("akka://sinvers/user/gui/progress")
+  //val simulationConfigurator = system.actorOf(Props[SimulationConfigurator].withDispatcher("scalafx-dispatcher"), "simulation-configurator")
 
   val fx2Dir = Paths.get("C:\\Users\\Jan\\Desktop\\Forge2-V3.0")
   val source = Paths.get("C:\\Users\\Jan\\Desktop\\sym")

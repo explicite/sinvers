@@ -3,6 +3,7 @@ package ui.controls
 import java.time.Duration
 
 import akka.actor.{ Actor, ActorLogging }
+import ui.Protocol.{ Iteration, Reset, Unregister, Register }
 
 import scala.language.postfixOps
 import scala.math.abs
@@ -33,7 +34,7 @@ class Progress extends Actor with ActorLogging {
   def receive = toSet
 
   def set(start: Long, max: Double): Receive = {
-    case Increment(stamp) =>
+    case Iteration(_, stamp) =>
       progressBar.setProgress(progressBar.progress.value + 1 / max)
       eta.text = {
         val iterations = max * progressBar.progress.value
@@ -42,29 +43,23 @@ class Progress extends Actor with ActorLogging {
         s"ETA: $duration s performance: ${formatter(1 / performance)} it/s"
       }
     case Reset =>
+      context.parent ! Unregister(progress)
       progressBar.setProgress(0)
       context become toSet
   }
 
   def toSet: Receive = {
-    case Set(start, max) => context become set(start, max)
+    case Set(start, max) =>
+      context.parent ! Register(progress, 1, 2)
+      context become set(start, max)
   }
 
   def formatter(d: Double): String = new java.text.DecimalFormat("0.###").format(abs(d))
 
-  @throws[Exception](classOf[Exception])
-  override def preStart(): Unit = {
-    super.preStart()
-    GUI.pane.add(progress, 1, 2)
-  }
 }
 
 object ProgressBarProtocol {
 
-  case class Increment(stamp: Long)
-
   case class Set(start: Long, max: Double)
-
-  case object Reset
 
 }

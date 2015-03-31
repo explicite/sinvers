@@ -1,11 +1,14 @@
 package ui.controls
 
 import akka.actor.{ Actor, ActorLogging }
+import ui.Protocol.{ Reset, Iteration, Unregister, Register }
 
 import scalafx.collections.ObservableBuffer
 import scalafx.scene.chart._
 
 class FitnessChart extends Actor with ActorLogging {
+
+  var iteration: Int = 0
 
   val xAxis = new NumberAxis {
     label = "iteration"
@@ -22,43 +25,31 @@ class FitnessChart extends Actor with ActorLogging {
     title = "Fitness monitoring for GWO"
     maxWidth = 750
     legendVisible = false
+    animated = false
   }
-
-  import FitnessChartProtocol._
 
   def receive = toIncrement
 
   def toIncrement: Receive = {
-    case Iteration(fitness: Double) =>
+    case Iteration(fitness, _) =>
       if (Double.MaxValue > fitness) {
         series.getData.add(XYChart.Data[Number, Number](0, fitness))
       }
+      context.parent ! Register(chart, 1, 1)
       context become incremented(1)
   }
 
   def incremented(iteration: Int): Receive = {
-    case Iteration(fitness) =>
+    case Iteration(fitness, _) =>
       if (Double.MaxValue > fitness) {
         series.getData.add(XYChart.Data[Number, Number](iteration, fitness))
         if (series.getData.size() > 15) series.getData.remove(0)
       }
       context become incremented(iteration + 1)
 
-    case Reset => context become toIncrement
+    case Reset =>
+      context.parent ! Unregister(chart)
+      context become toIncrement
   }
-
-  @throws[Exception](classOf[Exception])
-  override def preStart(): Unit = {
-    super.preStart()
-    GUI.pane.add(chart, 1, 1)
-  }
-
-}
-
-object FitnessChartProtocol {
-
-  case class Iteration(fitness: Double)
-
-  case object Reset
 
 }

@@ -2,13 +2,13 @@ package opt
 
 import java.nio.file.Path
 
-import akka.actor.{ ActorSystem, Props }
+import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.util.Timeout
-import data.{ Force, DataContainer, ResultContainer }
+import data.{ DataContainer, Force, ResultContainer }
 import io.forge.Protocol.{ Job, Parameters }
-import io.forge.Supervisor
 import reo.HSArgs
+import ui.Protocol.Iteration
 import util.XORShiftRandom
 
 import scala.concurrent.Await
@@ -24,25 +24,24 @@ case class FitnessFunction(forge: Path,
     conversion: Force) {
   implicit val timeout = Timeout(20 minutes)
 
-  val supervisor = system.actorOf(Props[Supervisor], "supervisor")
-  val progressBar = system.actorSelection("/user/progress-bar")
-  val fitnessChart = system.actorSelection("/user/fitness-chart")
-  progressBar ! ui.controls.ProgressBarProtocol.Reset
-  fitnessChart ! ui.controls.FitnessChartProtocol.Reset
+  val supervisor = system.actorSelection("akka://sinvers/user/supervisor")
+  val gui = system.actorSelection("akka://sinvers/user/gui")
 
   val random = new XORShiftRandom()
 
+  val maxJaw = 12
+  val margin = 0.1
   val interval = {
     //val max = 12 + 0.1
-    val max = 12 - 12 + 0.01
+    val max = 12 - maxJaw + 0.01
     //val min = 7.522 - 0.1
-    val min = 7.522 - 12 - 0.1
+    val min = 7.522 - maxJaw - margin
     StaticInterval(min, max)
   }
 
   val preparedData = data.slice(interval)
-  val interpolator = preparedData.interpolator(conversion, 12)
-  val steering = preparedData.steering(12)
+  val interpolator = preparedData.interpolator(conversion, maxJaw)
+  val steering = preparedData.steering(maxJaw)
 
   //return fitness for current context
   def fitness(args: Seq[Double]): Double = {
@@ -50,10 +49,9 @@ case class FitnessFunction(forge: Path,
     val request = (supervisor ? Job(forge, parameters)).mapTo[ResultContainer]
 
     val result = Await.result(request, timeout.duration)
-    val fitness = result.fit(interpolator)
+    val fitness = result.slice(StaticInterval(7.522, 12)).fit(interpolator)
 
-    progressBar ! ui.controls.ProgressBarProtocol.Increment(System.nanoTime())
-    fitnessChart ! ui.controls.FitnessChartProtocol.Iteration(fitness)
+    gui ! Iteration(fitness, System.nanoTime())
     fitness
   }
 

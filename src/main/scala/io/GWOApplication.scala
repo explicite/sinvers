@@ -23,8 +23,8 @@ object GWOApplication extends Application with App {
       function.fitness(sx)
     }
     val optimizer = GreyWolfOptimizer(fit, bounds)
-    val wolfs = 100
-    val iterations = 100
+    val wolfs = 10
+    val iterations = 10
     Util.time {
       progress ! ui.controls.ProgressBarProtocol.Set(System.nanoTime(), wolfs * iterations)
       val min = optimizer.min(wolfs, iterations)

@@ -11,7 +11,6 @@ import scala.language.postfixOps
 class Supervisor
     extends Actor
     with ActorLogging {
-  context.setReceiveTimeout(30 seconds)
 
   override val supervisorStrategy = OneForOneStrategy(maxNrOfRetries = 0, withinTimeRange = 500 millisecond) {
     case _ => Stop

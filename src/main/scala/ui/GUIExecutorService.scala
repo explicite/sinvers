@@ -21,8 +21,7 @@ abstract class GUIExecutorService extends AbstractExecutorService {
 }
 
 object ScalaFXExecutorService extends GUIExecutorService {
-  new JFXPanel()
-
   //trick to initialize fx toolkit
+  new JFXPanel()
   override def execute(command: Runnable) = Platform.runLater(command)
 }
