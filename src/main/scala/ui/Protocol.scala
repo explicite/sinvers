@@ -14,10 +14,16 @@ object Protocol {
 
   case object Absent
 
+  @deprecated
   case class Register(node: Node, column: Int, row: Int)
 
+  @deprecated
   case class Unregister(node: Node)
 
   case class Iteration(fitness: Double, stamp: Long)
+
+  case class AddProgress(node: Node)
+
+  case class RemoveProgress(node: Node)
 
 }

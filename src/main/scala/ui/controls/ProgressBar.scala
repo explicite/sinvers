@@ -3,29 +3,35 @@ package ui.controls
 import java.time.Duration
 
 import akka.actor.{ Actor, ActorLogging }
-import ui.Protocol.{ Iteration, Reset, Unregister, Register }
+import ui.Protocol._
 
 import scala.language.postfixOps
 import scala.math.abs
 import scalafx.geometry.Insets
 import scalafx.scene.control.ProgressBar
-import scalafx.scene.layout.HBox
+import scalafx.scene.layout.VBox
 import scalafx.scene.text.Text
 
 class Progress extends Actor with ActorLogging {
 
   import ui.controls.ProgressBarProtocol._
 
+  val gui = context.actorSelection("akka://sinvers/user/gui")
+
   val progressBar = new ProgressBar() {
-    minWidth = 500
+    prefWidth = 200
+    minWidth = 200
+    maxWidth = 200
     progress = 0
     stylesheets add "css/progress-bar.css"
   }
 
   val eta = new Text {}
 
-  val progress = new HBox {
-    minWidth = 750
+  val progress = new VBox {
+    prefWidth = 240
+    minWidth = 240
+    maxWidth = 240
     padding = Insets(20)
     spacing = 20
     children = Seq(progressBar, eta)
@@ -43,14 +49,14 @@ class Progress extends Actor with ActorLogging {
         s"ETA: $duration s performance: ${formatter(1 / performance)} it/s"
       }
     case Reset =>
-      context.parent ! Unregister(progress)
+      gui ! RemoveProgress(progress)
       progressBar.setProgress(0)
       context become toSet
   }
 
   def toSet: Receive = {
     case Set(start, max) =>
-      context.parent ! Register(progress, 1, 2)
+      gui ! AddProgress(progress)
       context become set(start, max)
   }
 

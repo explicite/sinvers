@@ -9,11 +9,10 @@ import scalafx.event.ActionEvent
 import scalafx.geometry.Insets
 import scalafx.scene.Scene
 import scalafx.scene.control.{ Menu, MenuBar, MenuItem }
-import scalafx.scene.layout.{ FlowPane, BorderPane, GridPane }
+import scalafx.scene.layout.{ BorderPane, FlowPane }
 import scalafx.stage.Stage
 
 class GUI extends Actor with ActorLogging {
-  val progress = context.actorOf(Props[Progress], "progress")
   val chart = context.actorOf(Props[FitnessChart], "fitness-chart")
   val simulation = context.actorOf(Props[SimulationConfigurator], "simulation")
 
@@ -48,10 +47,9 @@ class GUI extends Actor with ActorLogging {
     )
   }
 
-  val pane = new GridPane {
-    prefWidth = 1024
-    prefHeight = 640
+  val pane = new FlowPane() {
     padding = Insets(18)
+    hgap = 3
   }
 
   val manePane = new BorderPane {
@@ -73,15 +71,19 @@ class GUI extends Actor with ActorLogging {
 
   override def receive: Receive = {
     case Register(node, column, row) =>
-      pane.add(node, column, row)
+      pane.children.add(node)
     case Unregister(node) =>
       pane.getChildren.remove(node)
     case Show(node) =>
       val newStage = new Stage {
         scene = new Scene {
-          root = new FlowPane {children = node}
+          root = new FlowPane {
+            children = node
+          }
         }
-        onCloseRequest = handle {self ! Close(node)}
+        onCloseRequest = handle {
+          self ! Close(node)
+        }
       }
       stages.add(newStage)
       newStage.show()
@@ -91,8 +93,11 @@ class GUI extends Actor with ActorLogging {
           toClose.close()
           stages.remove(toClose)
       }
-    case iteration: Iteration =>
-      progress ! iteration
+    case AddProgress(node) =>
+      pane.children.add(node)
+    case RemoveProgress(node) =>
+      pane.children.remove(node)
+
   }
 
   @throws[Exception](classOf[Exception])

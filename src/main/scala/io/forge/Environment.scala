@@ -30,9 +30,10 @@ trait Environment extends Parser {
 
   def processBuilder(forge: Path, environment: Path): ProcessBuilder = {
     Process(
-      Seq(s"${forge.resolve("bin/xf2_p1.exe")}", DON),
+      //Seq(s"${forge.resolve("bin/xf2_p1.exe")}", DON),
+      Seq(s"$forge", DON),
       environment.toFile,
-      "PP2D_DIR" -> forge.toString,
+      "PP2D_DIR" -> forge.getParent.getParent.toString,
       "FORGE2_IO" -> "BIG_ENDIAN",
       "lang" -> "eng",
       "WORK_DIR" -> environment.toString

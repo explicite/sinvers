@@ -2,7 +2,7 @@ package opt
 
 import java.nio.file.Path
 
-import akka.actor.ActorSystem
+import akka.actor.{ ActorRef, ActorSystem }
 import akka.pattern.ask
 import akka.util.Timeout
 import data.{ DataContainer, Force, ResultContainer }
@@ -21,11 +21,11 @@ case class FitnessFunction(forge: Path,
     temperature: Double,
     system: ActorSystem,
     data: DataContainer,
-    conversion: Force) {
+    conversion: Force,
+    progress: ActorRef) {
   implicit val timeout = Timeout(20 minutes)
 
   val supervisor = system.actorSelection("akka://sinvers/user/supervisor")
-  val gui = system.actorSelection("akka://sinvers/user/gui")
 
   val random = new XORShiftRandom()
 
@@ -51,7 +51,7 @@ case class FitnessFunction(forge: Path,
     val result = Await.result(request, timeout.duration)
     val fitness = result.slice(StaticInterval(7.522, 12)).fit(interpolator)
 
-    gui ! Iteration(fitness, System.nanoTime())
+    progress ! Iteration(fitness, System.nanoTime())
     fitness
   }
 

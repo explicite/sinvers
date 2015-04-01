@@ -12,8 +12,6 @@ trait Application {
   val system = ActorSystem("sinvers")
   val supervisor = system.actorOf(Props[Supervisor], "supervisor")
   val gui = system.actorOf(Props[GUI], "gui")
-  val progress = system.actorSelection("akka://sinvers/user/gui/progress")
-  //val simulationConfigurator = system.actorOf(Props[SimulationConfigurator].withDispatcher("scalafx-dispatcher"), "simulation-configurator")
 
   val fx2Dir = Paths.get("C:\\Users\\Jan\\Desktop\\Forge2-V3.0")
   val source = Paths.get("C:\\Users\\Jan\\Desktop\\sym")
@@ -23,5 +21,5 @@ trait Application {
   val out = source.resolve("file.out")
   val experimentDirectory = "C:\\Users\\Jan\\Desktop\\mgr\\HA000490.D01"
   val experiment = DataContainer(new java.io.File(experimentDirectory))
-  val function = FitnessFunction(fx2Dir, mesh, out, 1000, system, experiment, KGF)
+  val function = FitnessFunction(fx2Dir, mesh, out, 1000, system, experiment, KGF, gui)
 }
