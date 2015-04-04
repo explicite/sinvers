@@ -1,6 +1,6 @@
 package test
 
-import akka.actor.{Props, ActorSystem}
+import akka.actor.{ Props, ActorSystem }
 import org.scalatest.{ FlatSpecLike, Matchers }
 import ui.controls.FitnessChart
 
