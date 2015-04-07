@@ -19,7 +19,6 @@ trait Environment extends Parser {
 
   def createEnvironment(forge: Path, parameters: Parameters): Path = {
     val environment = Files.createTempDirectory("sinvers")
-    //coping needed files
     createDon(environment.resolve(DON), parameters)
     Util.copy(parameters.steering, environment.resolve(STEERING))
     Util.copy(parameters.mesh, environment.resolve(MESH))
@@ -30,7 +29,6 @@ trait Environment extends Parser {
 
   def processBuilder(forge: Path, environment: Path): ProcessBuilder = {
     Process(
-      //Seq(s"${forge.resolve("bin/xf2_p1.exe")}", DON),
       Seq(s"$forge", DON),
       environment.toFile,
       "PP2D_DIR" -> forge.getParent.getParent.toString,

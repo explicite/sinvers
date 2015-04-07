@@ -6,7 +6,7 @@ object Protocol {
 
   case class Show(node: Node)
 
-  case class Close(node: Node)
+  case class Hide(node: Node)
 
   case object Reset
 
@@ -14,16 +14,18 @@ object Protocol {
 
   case object Absent
 
-  @deprecated
-  case class Register(node: Node, column: Int, row: Int)
-
-  @deprecated
-  case class Unregister(node: Node)
-
   case class Iteration(fitness: Double, stamp: Long)
 
-  case class AddProgress(node: Node)
+  /**
+   * Adding to presentation queue
+   * @param node node to present in queue
+   */
+  case class Add(node: Node)
 
-  case class RemoveProgress(node: Node)
+  /**
+   * Remove from presentation queue
+   * @param node node to remove from queue
+   */
+  case class Remove(node: Node)
 
 }

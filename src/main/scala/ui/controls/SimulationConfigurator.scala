@@ -1,12 +1,14 @@
 package ui.controls
 
-import java.nio.file.Paths
+import java.nio.file.{ Path, Paths }
 
 import akka.actor.{ Props, Actor, ActorLogging }
+import data.DataContainer
 import io.Protocol.Optimize
 import io.Simulation
-import ui.Protocol.{ Absent, Close, Present, Show }
+import ui.Protocol.{ Absent, Hide, Present, Show }
 
+import scala.util.{ Failure, Success, Try }
 import scalafx.Includes._
 import scalafx.event.ActionEvent
 import scalafx.geometry.Insets
@@ -27,14 +29,16 @@ class SimulationConfigurator extends Actor with ActorLogging {
 
   val forge = {
     val forgeDirButton = new Button {
-      id = "forgeDirButton"
       text = "forge exe"
       onAction = (ae: ActionEvent) => {
         val fileChooser = new FileChooser() {
           title = "Pick a forge exe"
           selectedExtensionFilter = new ExtensionFilter("Exe", "*.exe")
         }
-        forgeInput.text = fileChooser.showOpenDialog(configurator.getParent.getScene.window()).getPath
+        Try(fileChooser.showOpenDialog(configurator.getParent.getScene.window()).getPath) match {
+          case Success(path) => forgeInput.text = path
+          case Failure(err)  => log.error(err.getMessage)
+        }
       }
     }
     new HBox { children = List(forgeInput, forgeDirButton) }
@@ -46,14 +50,16 @@ class SimulationConfigurator extends Actor with ActorLogging {
 
   val mesh = {
     val meshDirButton = new Button {
-      id = "meshDirButton"
       text = "mesh file"
       onAction = (ae: ActionEvent) => {
         val fileChooser = new FileChooser() {
           title = "Pick a mesh file"
           selectedExtensionFilter = new ExtensionFilter("Mesh", "*.may")
         }
-        meshInput.text = fileChooser.showOpenDialog(configurator.getParent.getScene.window()).getPath
+        Try(fileChooser.showOpenDialog(configurator.getParent.getScene.window()).getPath) match {
+          case Success(path) => meshInput.text = path
+          case Failure(err)  => log.error(err.getMessage)
+        }
       }
     }
     new HBox { children = List(meshInput, meshDirButton) }
@@ -65,14 +71,16 @@ class SimulationConfigurator extends Actor with ActorLogging {
 
   val out = {
     val outDirButton = new Button {
-      id = "outDirButton"
       text = "out file"
       onAction = (ae: ActionEvent) => {
         val fileChooser = new FileChooser() {
           title = "Pick a out file"
           selectedExtensionFilter = new ExtensionFilter("Out", "*.out")
         }
-        outInput.text = fileChooser.showOpenDialog(configurator.getParent.getScene.window()).getPath
+        Try(fileChooser.showOpenDialog(configurator.getParent.getScene.window()).getPath) match {
+          case Success(path) => outInput.text = path
+          case Failure(err)  => log.error(err.getMessage)
+        }
       }
     }
     new HBox { children = List(outInput, outDirButton) }
@@ -84,11 +92,13 @@ class SimulationConfigurator extends Actor with ActorLogging {
 
   val experiment = {
     val experimentDirButton = new Button {
-      id = "experimentDirButton"
       text = "experiment file"
       onAction = (ae: ActionEvent) => {
         val fileChooser = new FileChooser() { title = "Pick a experiment dir" }
-        experimentInput.text = fileChooser.showOpenDialog(configurator.getParent.getScene.window()).getPath
+        Try(fileChooser.showOpenDialog(configurator.getParent.getScene.window()).getPath) match {
+          case Success(path) => experimentInput.text = path
+          case Failure(err)  => log.error(err.getMessage)
+        }
       }
     }
     new HBox { children = List(experimentInput, experimentDirButton) }
@@ -97,17 +107,19 @@ class SimulationConfigurator extends Actor with ActorLogging {
   val temperature = new TextField { promptText = "temperature" }
 
   val okButton = new Button {
-    id = "ok"
     text = "ok"
     onAction = (ae: ActionEvent) => {
+      val dataContainer = DataContainer(Paths.get(experimentInput.text.value).toFile)
+      //context.system.actorOf(Props[DataChart]) ! SetData(dataContainer)
       context.system.actorOf(Props[Simulation]) ! Optimize(
         Paths.get(forgeInput.text.value),
         Paths.get(meshInput.text.value),
         Paths.get(outInput.text.value),
-        Paths.get(experimentInput.text.value),
+        DataContainer(Paths.get(experimentInput.text.value).toFile),
         temperature.text.value.toDouble
       )
-      context.parent ! Close(configurator)
+      cleanup()
+      context.parent ! Hide(configurator)
     }
   }
 
@@ -115,12 +127,8 @@ class SimulationConfigurator extends Actor with ActorLogging {
     id = "cancel"
     text = "cancel"
     onAction = (ae: ActionEvent) => {
-      forgeInput.text = null
-      meshInput.text = null
-      outInput.text = null
-      experimentInput.text = null
-      temperature.text = null
-      context.parent ! Close(configurator)
+      cleanup()
+      context.parent ! Hide(configurator)
     }
   }
 
@@ -130,10 +138,22 @@ class SimulationConfigurator extends Actor with ActorLogging {
     case Present =>
       sender() ! Show(configurator)
     case Absent =>
-      sender() ! Close(configurator)
+      sender() ! Hide(configurator)
   }
 
   @throws[Exception](classOf[Exception])
   override def preStart(): Unit = configurator.children = List(forge, mesh, out, experiment, temperature, decision)
 
+  private def cleanup(): Unit = {
+    forgeInput.text = null
+    meshInput.text = null
+    outInput.text = null
+    experimentInput.text = null
+    temperature.text = null
+  }
+
+}
+
+object Protocol {
+  case class Files(forge: Path, mesh: Path, out: Path, experiment: Path)
 }

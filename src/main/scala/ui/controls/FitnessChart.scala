@@ -1,14 +1,12 @@
 package ui.controls
 
 import akka.actor.{ Actor, ActorLogging }
-import ui.Protocol.{ Reset, Iteration, Unregister, Register }
+import ui.Protocol._
 
 import scalafx.collections.ObservableBuffer
 import scalafx.scene.chart._
 
 class FitnessChart extends Actor with ActorLogging {
-
-  var iteration: Int = 0
 
   val xAxis = new NumberAxis {
     label = "iteration"
@@ -35,7 +33,7 @@ class FitnessChart extends Actor with ActorLogging {
       if (Double.MaxValue > fitness) {
         series.getData.add(XYChart.Data[Number, Number](0, fitness))
       }
-      context.parent ! Register(chart, 1, 1)
+      context.parent ! Show(chart)
       context become incremented(1)
   }
 
@@ -48,7 +46,7 @@ class FitnessChart extends Actor with ActorLogging {
       context become incremented(iteration + 1)
 
     case Reset =>
-      context.parent ! Unregister(chart)
+      context.parent ! Hide(chart)
       context become toIncrement
   }
 

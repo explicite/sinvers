@@ -95,8 +95,10 @@ object DataContainer {
     val (time, force, jaw, ptemp, strain, stress, stroke, tc1, tc2) = {
       for (line <- lines) yield {
         line.split("\\s+") match {
-          case Array(t, f, j, p, stn, sts, ste, t1, t2) => (t.toDouble, f.toDouble, j.toDouble, p.toDouble, stn.toDouble, sts.toDouble, ste.toDouble, t1.toDouble, t2.toDouble)
-          case _                                        => throw new Exception(s"Inconsistent date in file:${file.getName}")
+          case Array(t, f, j, p, stn, sts, ste, t1, t2) =>
+            (t.toDouble, f.toDouble, j.toDouble, p.toDouble, stn.toDouble, sts.toDouble, ste.toDouble, t1.toDouble, t2.toDouble)
+          case _ =>
+            throw new Exception(s"Inconsistent date in file:${file.getName}")
         }
       }
     }.toList.unzip9

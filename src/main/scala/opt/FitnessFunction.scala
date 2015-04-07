@@ -2,7 +2,7 @@ package opt
 
 import java.nio.file.Path
 
-import akka.actor.{ ActorRef, ActorSystem }
+import akka.actor.{ Props, ActorRef, ActorSystem }
 import akka.pattern.ask
 import akka.util.Timeout
 import data.{ DataContainer, Force, ResultContainer }

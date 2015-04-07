@@ -7,7 +7,8 @@ import scala.collection.mutable
 import scalafx.Includes._
 import scalafx.event.ActionEvent
 import scalafx.geometry.Insets
-import scalafx.scene.Scene
+import scalafx.scene.text.Font
+import scalafx.scene.{ Node, Scene }
 import scalafx.scene.control.{ Menu, MenuBar, MenuItem }
 import scalafx.scene.layout.{ BorderPane, FlowPane }
 import scalafx.stage.Stage
@@ -22,7 +23,7 @@ class GUI extends Actor with ActorLogging {
     menus = List(
       new Menu("simulation") {
         items = List(
-          new MenuItem("new") {
+          new MenuItem("new       ") {
             onAction = {
               e: ActionEvent => simulation ! Present
             }
@@ -61,45 +62,46 @@ class GUI extends Actor with ActorLogging {
     title = "sinvers"
     width = 864
     height = 550
-    scene = new Scene {
-      root = manePane
-    }
-    onCloseRequest = handle {
-      System.exit(0)
-    }
+    scene = new Scene { root = manePane }
+    onCloseRequest = handle { System.exit(0) }
+    resizable = true
   }
 
   override def receive: Receive = {
-    case Register(node, column, row) =>
-      pane.children.add(node)
-    case Unregister(node) =>
-      pane.getChildren.remove(node)
-    case Show(node) =>
-      val newStage = new Stage {
-        scene = new Scene {
-          root = new FlowPane {
-            children = node
-          }
-        }
-        onCloseRequest = handle {
-          self ! Close(node)
-        }
-      }
-      stages.add(newStage)
-      newStage.show()
-    case Close(node) =>
-      stages.find(_.scene.get().getChildren.contains(node)).foreach {
-        toClose =>
-          toClose.close()
-          stages.remove(toClose)
-      }
-    case AddProgress(node) =>
-      pane.children.add(node)
-    case RemoveProgress(node) =>
-      pane.children.remove(node)
-
+    case Show(node)   => show(node)
+    case Hide(node)   => hide(node)
+    case Add(node)    => add(node)
+    case Remove(node) => remove(node)
   }
 
   @throws[Exception](classOf[Exception])
-  override def preStart(): Unit = stage.show()
+  override def preStart(): Unit = {
+    stage.show()
+  }
+
+  private def add(node: Node) = pane.children.add(node)
+
+  private def remove(node: Node) = pane.children.remove(node)
+
+  private def hide(node: Node) = {
+    stages.find(_.scene.get().getChildren.contains(node)).foreach {
+      toClose =>
+        toClose.close()
+        stages.remove(toClose)
+    }
+  }
+
+  private def show(node: Node) = {
+    val newStage = new Stage {
+      scene = new Scene {
+        root = new FlowPane { children = node }
+      }
+      onCloseRequest = handle {
+        self ! Hide(node)
+      }
+    }
+    stages.add(newStage)
+    newStage.show()
+  }
+
 }
