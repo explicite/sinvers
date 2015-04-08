@@ -1,9 +1,10 @@
 package io
 
-import akka.actor.{ Props, Actor, ActorLogging }
-import data.{ DataContainer, KGF }
+import akka.actor.{ Actor, ActorLogging, Props }
+import data.KGF
 import io.Protocol.Optimize
 import opt.{ FitnessFunction, GreyWolfOptimizer, StaticInterval }
+import reo.HSArgs
 import ui.controls.Progress
 import util.Util
 
@@ -40,6 +41,7 @@ class Simulation extends Actor with ActorLogging {
       Util.time {
         progress ! ui.controls.ProgressProtocol.SetStart(System.nanoTime(), wolfs * iterations)
         val min = optimizer.min(wolfs, iterations)
+        progress ! ui.controls.ProgressProtocol.SetEnd(HSArgs(min))
         println(s"minumum: $min")
       }
   }
