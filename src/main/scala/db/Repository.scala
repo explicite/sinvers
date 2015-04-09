@@ -1,12 +1,24 @@
 package db
 
-import scala.slick.driver.H2Driver.simple._
+import scala.slick.driver.HsqldbDriver.simple._
 import scala.slick.jdbc.meta.MTable
 
 object Repository extends DatabaseConnection {
 
+  case class HSArgument(id: Option[Long],
+    m1: Double,
+    m2: Double,
+    m3: Double,
+    m4: Double,
+    m5: Double,
+    m6: Double,
+    m7: Double,
+    m8: Double,
+    m9: Double,
+    epsSs: Double)
+
   class HSArguments(tag: Tag)
-      extends Table[(Double, Double, Double, Double, Double, Double, Double, Double, Double, Double)](tag, "hs_arguments") {
+      extends Table[HSArgument](tag, "hs_arguments") {
 
     //columns
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
@@ -32,13 +44,17 @@ object Repository extends DatabaseConnection {
     def epsSs = column[Double]("eps_ss")
 
     //others
-    def * = (m1, m2, m3, m4, m5, m6, m7, m8, m9, epsSs)
+    def * = (id.?, m1, m2, m3, m4, m5, m6, m7, m8, m9, epsSs) <> (HSArgument.tupled, HSArgument.unapply)
   }
 
   val hsArguments = TableQuery[HSArguments]
 
+  case class Optimization(id: Option[Long],
+    argsId: Long,
+    temperature: Double)
+
   class Optimizations(tag: Tag)
-      extends Table[(Long, Double)](tag, "optimizations") {
+      extends Table[Optimization](tag, "optimizations") {
 
     //columns
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
@@ -51,7 +67,7 @@ object Repository extends DatabaseConnection {
     def hsArgument = foreignKey("hs_arguments_fk", hsArgumentId, hsArguments)(_.id)
 
     //others
-    def * = (hsArgumentId, temperature)
+    def * = (id.?, hsArgumentId, temperature) <> (Optimization.tupled, Optimization.unapply)
   }
 
   val optimizations = TableQuery[Optimizations]
@@ -59,9 +75,11 @@ object Repository extends DatabaseConnection {
   //TODO create initialization
   def createSchema() = withSession {
     implicit session =>
-      if (MTable.getTables("optimizations").list.isEmpty) {
-        (optimizations.ddl ++ hsArguments.ddl).create
-      }
+      createIfNotExists(hsArguments, optimizations)
+  }
+
+  private def createIfNotExists(tables: TableQuery[_ <: Table[_]]*)(implicit session: Session) {
+    tables foreach { table => if (MTable.getTables(table.baseTableRow.tableName).list.isEmpty) table.ddl.create }
   }
 
 }

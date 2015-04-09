@@ -9,7 +9,7 @@ scalaVersion := "2.11.6"
 resolvers += "Sonatype Releases" at "http://oss.sonatype.org/content/repositories/releases"
 
 libraryDependencies ++= Seq(
-  "com.h2database" % "h2" % "1.4.186",
+  "org.hsqldb" % "hsqldb" % "2.3.2",
   "com.typesafe.slick" %% "slick" % "2.1.0",
   "org.scalafx" %% "scalafx" % "8.0.40-R8",
   "com.typesafe.akka" %% "akka-actor" % "2.3.9",

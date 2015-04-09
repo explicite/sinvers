@@ -8,7 +8,6 @@ import scala.collection.mutable
 import scalafx.Includes._
 import scalafx.event.ActionEvent
 import scalafx.geometry.Insets
-import scalafx.scene.text.Font
 import scalafx.scene.{ Node, Scene }
 import scalafx.scene.control.{ Menu, MenuBar, MenuItem }
 import scalafx.scene.layout.{ BorderPane, FlowPane }
@@ -32,16 +31,6 @@ class GUI extends Actor with ActorLogging {
           new MenuItem("list") {
             onAction = {
               e: ActionEvent => println("list")
-            }
-          },
-          new MenuItem("load") {
-            onAction = {
-              e: ActionEvent => println("load")
-            }
-          },
-          new MenuItem("save") {
-            onAction = {
-              e: ActionEvent => println("save")
             }
           }
         )

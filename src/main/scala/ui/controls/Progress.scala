@@ -11,13 +11,13 @@ import scala.language.postfixOps
 import scala.math.abs
 import scalafx.Includes._
 import scalafx.event.ActionEvent
-import scalafx.geometry.Insets
+import scalafx.geometry.{ Pos, Insets }
 import scalafx.scene.control.{ Button, ProgressBar }
 import scalafx.scene.image.{ Image, ImageView }
 import scalafx.scene.layout.{ HBox, VBox }
 import scalafx.scene.text.Text
 import db.Repository._
-import scala.slick.driver.H2Driver.simple._
+import scala.slick.driver.HsqldbDriver.simple._
 
 class Progress extends Actor with ActorLogging with DatabaseConnection {
 
@@ -55,8 +55,8 @@ class Progress extends Actor with ActorLogging with DatabaseConnection {
     onAction = (ae: ActionEvent) => {
       args.foreach { arg =>
         withSession { implicit session =>
-          val id = (hsArguments returning hsArguments.map(_.id)) += (arg.m1, arg.m2, arg.m3, arg.m4, arg.m5, arg.m6, arg.m7, arg.m8, arg.m9, arg.epsSs)
-          optimizations += (id, 1000)
+          val id = (hsArguments returning hsArguments.map(_.id)) += HSArgument(None, arg.m1, arg.m2, arg.m3, arg.m4, arg.m5, arg.m6, arg.m7, arg.m8, arg.m9, arg.epsSs)
+          optimizations += Optimization(None, id, 1000)
           println(optimizations.list)
         }
 
@@ -82,7 +82,8 @@ class Progress extends Actor with ActorLogging with DatabaseConnection {
   }
 
   val box = new HBox {
-    children = List(eta, saveButton, removeButton)
+    alignment = Pos.TopRight
+    children = List(saveButton, removeButton)
   }
 
   def receive = toSet
@@ -115,7 +116,7 @@ class Progress extends Actor with ActorLogging with DatabaseConnection {
   def formatter(d: Double): String = new java.text.DecimalFormat("0.###").format(abs(d))
 
   @throws[Exception](classOf[Exception])
-  override def preStart(): Unit = progress.children = Seq(progressBar, box)
+  override def preStart(): Unit = progress.children = Seq(progressBar, eta, box)
 }
 
 object ProgressProtocol {
