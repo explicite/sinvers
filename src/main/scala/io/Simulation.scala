@@ -42,7 +42,6 @@ class Simulation extends Actor with ActorLogging {
         progress ! ui.controls.ProgressProtocol.SetStart(System.nanoTime(), wolfs * iterations)
         val min = optimizer.min(wolfs, iterations)
         progress ! ui.controls.ProgressProtocol.SetEnd(temperature, strainRate, HSArgs(min))
-        println(s"minumum: $min")
       }
   }
 }

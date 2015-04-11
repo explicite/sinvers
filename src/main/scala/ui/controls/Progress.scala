@@ -58,8 +58,6 @@ class Progress extends Actor with ActorLogging with DbConnection {
         case (temperature, strainRate, arg) =>
           val id = HSArgumentRepository.save(HSArgument(None, arg.a1, arg.m1, arg.m2, arg.m3, arg.m4, arg.m5, arg.m6, arg.m7, arg.m8, arg.m9, arg.epsSs))
           SimulationRepository.save(Simulation(None, id, temperature, strainRate))
-          println(SimulationRepository.findAll())
-
           gui ! Remove(progress)
       }
     }
