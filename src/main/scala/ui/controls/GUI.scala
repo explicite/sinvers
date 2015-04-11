@@ -1,7 +1,7 @@
 package ui.controls
 
 import akka.actor.{ Actor, ActorLogging, Props }
-import db.Repository
+import db.Repositors
 import ui.Protocol._
 
 import scala.collection.mutable
@@ -16,6 +16,7 @@ import scalafx.stage.Stage
 class GUI extends Actor with ActorLogging {
   val chart = context.actorOf(Props[FitnessChart], "fitness-chart")
   val simulation = context.actorOf(Props[SimulationConfigurator], "simulation")
+  val simulationList = context.actorOf(Props[SimulationList], "simulation-list")
 
   val stages = mutable.Set.empty[Stage]
 
@@ -30,7 +31,7 @@ class GUI extends Actor with ActorLogging {
           },
           new MenuItem("list") {
             onAction = {
-              e: ActionEvent => println("list")
+              e: ActionEvent => simulationList ! Present
             }
           }
         )
@@ -66,7 +67,7 @@ class GUI extends Actor with ActorLogging {
 
   @throws[Exception](classOf[Exception])
   override def preStart(): Unit = {
-    Repository.createSchema()
+    Repositors.createSchema()
     stage.show()
   }
 

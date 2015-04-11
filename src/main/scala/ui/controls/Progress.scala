@@ -3,7 +3,8 @@ package ui.controls
 import java.time.Duration
 
 import akka.actor.{ Actor, ActorLogging }
-import db.{ DatabaseConnection, Repository }
+import db.{ Simulation, HSArgument, DbConnection }
+import db.repository.{ SimulationRepository, HSArgumentRepository }
 import reo.HSArgs
 import ui.Protocol._
 
@@ -11,15 +12,13 @@ import scala.language.postfixOps
 import scala.math.abs
 import scalafx.Includes._
 import scalafx.event.ActionEvent
-import scalafx.geometry.{ Pos, Insets }
+import scalafx.geometry.{ Insets, Pos }
 import scalafx.scene.control.{ Button, ProgressBar }
 import scalafx.scene.image.{ Image, ImageView }
 import scalafx.scene.layout.{ HBox, VBox }
 import scalafx.scene.text.Text
-import db.Repository._
-import scala.slick.driver.HsqldbDriver.simple._
 
-class Progress extends Actor with ActorLogging with DatabaseConnection {
+class Progress extends Actor with ActorLogging with DbConnection {
 
   import ui.controls.ProgressProtocol._
 
@@ -35,7 +34,9 @@ class Progress extends Actor with ActorLogging with DatabaseConnection {
 
   var args: Option[HSArgs] = None
 
-  val eta = new Text {}
+  val eta = new Text {
+    text = s"ETA: ? s perf: 0 it/s"
+  }
 
   val progress = new VBox {
     prefWidth = 300
@@ -54,11 +55,9 @@ class Progress extends Actor with ActorLogging with DatabaseConnection {
   val saveButton = new Button {
     onAction = (ae: ActionEvent) => {
       args.foreach { arg =>
-        withSession { implicit session =>
-          val id = (hsArguments returning hsArguments.map(_.id)) += HSArgument(None, arg.m1, arg.m2, arg.m3, arg.m4, arg.m5, arg.m6, arg.m7, arg.m8, arg.m9, arg.epsSs)
-          optimizations += Optimization(None, id, 1000)
-          println(optimizations.list)
-        }
+        val id = HSArgumentRepository.save(HSArgument(None, arg.a1, arg.m1, arg.m2, arg.m3, arg.m4, arg.m5, arg.m6, arg.m7, arg.m8, arg.m9, arg.epsSs))
+        SimulationRepository.save(Simulation(None, id, 1000))
+        println(SimulationRepository.findAll())
 
         gui ! Remove(progress)
       }
@@ -117,6 +116,7 @@ class Progress extends Actor with ActorLogging with DatabaseConnection {
 
   @throws[Exception](classOf[Exception])
   override def preStart(): Unit = progress.children = Seq(progressBar, eta, box)
+
 }
 
 object ProgressProtocol {
