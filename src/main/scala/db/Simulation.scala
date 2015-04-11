@@ -5,7 +5,8 @@ case class SimulationId(value: Long) extends MappedTo[Long]
 
 case class Simulation(id: Option[SimulationId],
   argsId: HSArgumentId,
-  temperature: Double)
+  temperature: Double,
+  strainRate: Double)
 
 class Simulations(tag: Tag)
     extends Table[Simulation](tag, "simulations") {
@@ -17,11 +18,13 @@ class Simulations(tag: Tag)
 
   def temperature = column[Double]("temperature")
 
+  def strainRate = column[Double]("straine_rate")
+
   //constraints
   def hsArgument = foreignKey("hs_arguments_fk", hsArgumentId, HSArguments.query)(_.id)
 
   //others
-  def * = (id.?, hsArgumentId, temperature) <> (Simulation.tupled, Simulation.unapply)
+  def * = (id.?, hsArgumentId, temperature, strainRate) <> (Simulation.tupled, Simulation.unapply)
 
 }
 

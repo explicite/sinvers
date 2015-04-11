@@ -7,6 +7,8 @@ import data.DataContainer
 import io.Protocol.Optimize
 import io.Simulation
 import ui.Protocol.{ Absent, Hide, Present, Show }
+import ui.controls.DataChart.SetData
+import ui.controls.Protocol.Slice
 
 import scala.util.{ Failure, Success, Try }
 import scalafx.Includes._
@@ -106,20 +108,14 @@ class SimulationConfigurator extends Actor with ActorLogging {
 
   val temperature = new TextField { promptText = "temperature" }
 
+  val strainRate = new TextField { promptText = "strain rate" }
+
   val okButton = new Button {
     text = "ok"
     onAction = (ae: ActionEvent) => {
       val dataContainer = DataContainer(Paths.get(experimentInput.text.value).toFile)
-      //context.system.actorOf(Props[DataChart]) ! SetData(dataContainer)
-      context.system.actorOf(Props[Simulation]) ! Optimize(
-        Paths.get(forgeInput.text.value),
-        Paths.get(meshInput.text.value),
-        Paths.get(outInput.text.value),
-        DataContainer(Paths.get(experimentInput.text.value).toFile),
-        temperature.text.value.toDouble
-      )
-      cleanup()
-      context.parent ! Hide(configurator)
+      context.actorOf(Props[DataChart]) ! SetData(dataContainer)
+      context become waitingForSlice
     }
   }
 
@@ -134,15 +130,32 @@ class SimulationConfigurator extends Actor with ActorLogging {
 
   val decision = new HBox { children = List(okButton, cancelButton) }
 
-  override def receive: Receive = {
+  override def receive = ready
+
+  def ready: Receive = {
     case Present =>
       sender() ! Show(configurator)
     case Absent =>
       sender() ! Hide(configurator)
   }
 
+  def waitingForSlice: Receive = {
+    case Slice(slice) =>
+      context.system.actorOf(Props[Simulation]) ! Optimize(
+        Paths.get(forgeInput.text.value),
+        Paths.get(meshInput.text.value),
+        Paths.get(outInput.text.value),
+        slice,
+        temperature.text.value.toDouble,
+        strainRate.text.value.toDouble
+      )
+      cleanup()
+      context.parent ! Hide(configurator)
+      context become ready
+  }
+
   @throws[Exception](classOf[Exception])
-  override def preStart(): Unit = configurator.children = List(forge, mesh, out, experiment, temperature, decision)
+  override def preStart(): Unit = configurator.children = List(forge, mesh, out, experiment, temperature, strainRate, decision)
 
   private def cleanup(): Unit = {
     forgeInput.text = null
@@ -150,10 +163,12 @@ class SimulationConfigurator extends Actor with ActorLogging {
     outInput.text = null
     experimentInput.text = null
     temperature.text = null
+    strainRate.text = null
   }
 
 }
 
 object Protocol {
   case class Files(forge: Path, mesh: Path, out: Path, experiment: Path)
+  case class Slice(dataContainer: DataContainer)
 }

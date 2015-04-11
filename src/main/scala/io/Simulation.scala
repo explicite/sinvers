@@ -12,7 +12,7 @@ class Simulation extends Actor with ActorLogging {
   val progress = context.actorOf(Props[Progress])
 
   override def receive: Receive = {
-    case Optimize(forge, mesh, out, experiment, temperature) =>
+    case Optimize(forge, mesh, out, experiment, temperature, strainRate) =>
       val function = FitnessFunction(forge, mesh, out, temperature, context.system, experiment, KGF, progress)
 
       val bounds = Seq(
@@ -41,7 +41,7 @@ class Simulation extends Actor with ActorLogging {
       Util.time {
         progress ! ui.controls.ProgressProtocol.SetStart(System.nanoTime(), wolfs * iterations)
         val min = optimizer.min(wolfs, iterations)
-        progress ! ui.controls.ProgressProtocol.SetEnd(HSArgs(min))
+        progress ! ui.controls.ProgressProtocol.SetEnd(temperature, strainRate, HSArgs(min))
         println(s"minumum: $min")
       }
   }

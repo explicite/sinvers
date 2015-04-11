@@ -32,7 +32,7 @@ class Progress extends Actor with ActorLogging with DbConnection {
     stylesheets add "css/progress-bar.css"
   }
 
-  var args: Option[HSArgs] = None
+  var args: Option[(Double, Double, HSArgs)] = None
 
   val eta = new Text {
     text = s"ETA: ? s perf: 0 it/s"
@@ -54,12 +54,13 @@ class Progress extends Actor with ActorLogging with DbConnection {
 
   val saveButton = new Button {
     onAction = (ae: ActionEvent) => {
-      args.foreach { arg =>
-        val id = HSArgumentRepository.save(HSArgument(None, arg.a1, arg.m1, arg.m2, arg.m3, arg.m4, arg.m5, arg.m6, arg.m7, arg.m8, arg.m9, arg.epsSs))
-        SimulationRepository.save(Simulation(None, id, 1000))
-        println(SimulationRepository.findAll())
+      args.foreach {
+        case (temperature, strainRate, arg) =>
+          val id = HSArgumentRepository.save(HSArgument(None, arg.a1, arg.m1, arg.m2, arg.m3, arg.m4, arg.m5, arg.m6, arg.m7, arg.m8, arg.m9, arg.epsSs))
+          SimulationRepository.save(Simulation(None, id, temperature, strainRate))
+          println(SimulationRepository.findAll())
 
-        gui ! Remove(progress)
+          gui ! Remove(progress)
       }
     }
     graphic = new ImageView {
@@ -96,10 +97,10 @@ class Progress extends Actor with ActorLogging with DbConnection {
         val duration = Duration.ofSeconds(((max - iterations) * performance).toLong)
         s"ETA: $duration s perf: ${formatter(1 / performance)} it/s"
       }
-    case SetEnd(newArgs) =>
+    case SetEnd(temperature, strainRate, newArgs) =>
       saveButton.disable = false
       removeButton.disable = false
-      args = Some(newArgs)
+      args = Some(temperature, strainRate, newArgs)
     case Reset =>
       gui ! Remove(progress)
       progressBar.setProgress(0)
@@ -123,6 +124,6 @@ object ProgressProtocol {
 
   case class SetStart(start: Long, max: Double)
 
-  case class SetEnd(hsArgs: HSArgs)
+  case class SetEnd(temperature: Double, strainRate: Double, hsArgs: HSArgs)
 
 }

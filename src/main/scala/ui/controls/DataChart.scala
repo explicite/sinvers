@@ -6,8 +6,9 @@ import javafx.scene.input.{ MouseButton, MouseEvent }
 import akka.actor.{ Actor, ActorLogging }
 import data.DataContainer
 import opt.StaticInterval
-import ui.Protocol.Show
+import ui.Protocol.{ Hide, Show }
 import ui.controls.DataChart.SetData
+import ui.controls.Protocol.Slice
 import util.jfxutils.SFXChartUtil
 import util.jfxutils.chart.ChartPanManager
 
@@ -38,46 +39,60 @@ class DataChart extends Actor with ActorLogging {
 
   private val panner = new ChartPanManager(chart)
 
+  private var slice: DataContainer = null
+
+  val min = new TextField {
+    promptText = "min"
+  }
+
+  val max = new TextField {
+    promptText = "max"
+  }
+
+  val sliceButton = new Button {
+    id = "sliceButton"
+    text = "slice"
+    onAction = (ae: ActionEvent) => {
+      val interval = StaticInterval(min.text.value.toDouble, max.text.value.toDouble)
+      slice = slice.slice(interval)
+      val dataSlice = slice.jaw.zip(slice.force)
+      series.data = dataSlice.map { case (x, y) => XYChart.Data[Number, Number](x, y) }
+    }
+  }
+
+  val okButton = new Button {
+    id = "okButoon"
+    text = "ok"
+    onAction = (ae: ActionEvent) => {
+      context.parent ! Slice(slice)
+      clean()
+    }
+  }
+
+  val sliceBox = new VBox {
+    children = List(min, max, sliceButton, okButton)
+  }
+
+  val chartPanel = SFXChartUtil.setupZooming(chart, new EventHandler[MouseEvent]() {
+    override def handle(event: MouseEvent): Unit = {
+      if (event.getButton != MouseButton.PRIMARY || event.isShortcutDown) event.consume()
+    }
+  })
+
+  val panel = new HBox {
+    padding = Insets(10)
+    children = List(chartPanel, sliceBox)
+  }
+
   override def receive: Receive = {
     case SetData(data) =>
-      series.data = null
       val chartData = data.jaw.zip(data.force)
       series.data = chartData.map { case (x, y) => XYChart.Data[Number, Number](x, y) }
-
-      val min = new TextField {
-        promptText = "min"
-      }
-
-      val max = new TextField {
-        promptText = "max"
-      }
-
-      val sliceButton = new Button {
-        id = "sliceButton"
-        text = "slice"
-        onAction = (ae: ActionEvent) => {
-          val interval = StaticInterval(min.text.value.toDouble, max.text.value.toDouble)
-          val slice = data.slice(interval)
-          val dataSlice = slice.jaw.zip(slice.force)
-          series.data = dataSlice.map { case (x, y) => XYChart.Data[Number, Number](x, y) }
-        }
-      }
-
-      val sliceBox = new VBox {
-        children = List(min, max, sliceButton)
-      }
-
-      val chartPanel = SFXChartUtil.setupZooming(chart, new EventHandler[MouseEvent]() {
-        override def handle(event: MouseEvent): Unit = {
-          if (event.getButton != MouseButton.PRIMARY || event.isShortcutDown) event.consume()
-        }
-      })
-
-      gui ! Show(new HBox {
-        padding = Insets(10)
-        children = List(chartPanel, sliceBox)
-      })
+      slice = data
+      gui ! Show(panel)
   }
+
+  def clean(): Unit = gui ! Hide(panel)
 
   @throws[Exception](classOf[Exception])
   override def preStart(): Unit = {

@@ -4,6 +4,7 @@ import db.SimulationId
 
 case class SimulationView(id: SimulationId,
   temperature: Double,
+  strainRate: Double,
   a1: Double,
   m1: Double,
   m2: Double,
