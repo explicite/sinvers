@@ -24,7 +24,7 @@ class SimulationList extends Actor with ActorLogging with DbConnection {
   def simulations = ObservableBuffer(SimulationService.findAll())
 
   val list = new TableView[SimulationView] {
-    columns ++= List(
+    columns += (
       new TableColumn[SimulationView, Long] {
         text = "id"
         cellValueFactory = { features => ObjectProperty[Long](features.value.id.value) }
@@ -41,10 +41,10 @@ class SimulationList extends Actor with ActorLogging with DbConnection {
         editable = false
       },
       new TableColumn[SimulationView, String] {
-        text = "args(m1..m9,epss)"
+        text = "args(a1,m1..m9,epss)"
         cellValueFactory = { features =>
           ObjectProperty[String](
-            s"${scienceLowFormatter(features.value.m1)},${scienceLowFormatter(features.value.m2)},${scienceLowFormatter(features.value.m3)},${scienceLowFormatter(features.value.m4)},${scienceLowFormatter(features.value.m5)},${scienceLowFormatter(features.value.m6)},${scienceLowFormatter(features.value.m8)},${scienceLowFormatter(features.value.m9)},${scienceLowFormatter(features.value.epsSs)}"
+            s"${scienceLowFormatter(features.value.a1)}, ${scienceLowFormatter(features.value.m1)},${scienceLowFormatter(features.value.m2)},${scienceLowFormatter(features.value.m3)},${scienceLowFormatter(features.value.m4)},${scienceLowFormatter(features.value.m5)},${scienceLowFormatter(features.value.m6)},${scienceLowFormatter(features.value.m8)},${scienceLowFormatter(features.value.m9)},${scienceLowFormatter(features.value.epsSs)}"
           )
         }
         editable = false

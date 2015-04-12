@@ -5,7 +5,7 @@ import java.nio.file.Path
 import akka.actor.{ Props, ActorRef, ActorSystem }
 import akka.pattern.ask
 import akka.util.Timeout
-import data.{ DataContainer, Force, ResultContainer }
+import data.{ Samples, DataContainer, Force, ResultContainer }
 import io.forge.Protocol.{ Job, Parameters }
 import reo.HSArgs
 import ui.Protocol.Iteration
@@ -16,8 +16,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 case class FitnessFunction(forge: Path,
-    mesh: Path,
-    out: Path,
+    sample: Samples,
     temperature: Double,
     system: ActorSystem,
     data: DataContainer,
@@ -29,27 +28,27 @@ case class FitnessFunction(forge: Path,
 
   val random = new XORShiftRandom()
 
-  val maxJaw = 12
-  val margin = 0.1
   val interval = {
-    //val max = 12 + 0.1
-    val max = 12 - maxJaw + 0.01
-    //val min = 7.522 - 0.1
-    val min = 7.522 - maxJaw - margin
+    val max = data.jaw.max + sample.max
+    val min = data.jaw.min + sample.max
     StaticInterval(min, max)
   }
 
-  val preparedData = data.slice(interval)
-  val interpolator = preparedData.interpolator(conversion, maxJaw)
-  val steering = preparedData.steering(maxJaw)
+  val interpolatorInterval = {
+    StaticInterval(data.jaw.min - 0.01, data.jaw.max + 0.01)
+  }
+
+  val preparedData = data.slice(interpolatorInterval)
+  val interpolator = preparedData.interpolator(conversion, sample.max)
+  val steering = preparedData.steering(sample.max)
 
   //return fitness for current context
   def fitness(args: Seq[Double]): Double = {
-    val parameters = Parameters(mesh, out, steering, temperature, HSArgs(args))
+    val parameters = Parameters(sample, steering, interval, temperature, HSArgs(args))
     val request = (supervisor ? Job(forge, parameters)).mapTo[ResultContainer]
 
     val result = Await.result(request, timeout.duration)
-    val fitness = result.slice(StaticInterval(7.522, 12)).fit(interpolator)
+    val fitness = result.slice(interval).fit(interpolator)
 
     progress ! Iteration(fitness, System.nanoTime())
     fitness

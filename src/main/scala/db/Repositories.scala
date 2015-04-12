@@ -4,7 +4,7 @@ import scala.slick.driver.HsqldbDriver.simple._
 import scala.slick.jdbc.meta.MTable
 import scala.util.Try
 
-object Repositors extends DbConnection {
+object Repositories extends DbConnection {
 
   //TODO create initialization
   def createSchema() = withSession {

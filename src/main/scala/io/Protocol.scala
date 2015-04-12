@@ -2,8 +2,8 @@ package io
 
 import java.nio.file.Path
 
-import data.DataContainer
+import data.{ Samples, DataContainer }
 
 object Protocol {
-  case class Optimize(forge: Path, mesh: Path, out: Path, experiment: DataContainer, temperature: Double, strainRate: Double)
+  case class Optimize(forge: Path, sample: Samples, experiment: DataContainer, temperature: Double, strainRate: Double)
 }

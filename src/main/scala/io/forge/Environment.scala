@@ -21,8 +21,8 @@ trait Environment extends Parser {
     val environment = Files.createTempDirectory("sinvers")
     createDon(environment.resolve(DON), parameters)
     Util.copy(parameters.steering, environment.resolve(STEERING))
-    Util.copy(parameters.mesh, environment.resolve(MESH))
-    Util.copy(parameters.out, environment.resolve(OUT))
+    Util.copy(parameters.sample.mesh, environment.resolve(MESH))
+    Util.copy(parameters.sample.tooling, environment.resolve(OUT))
 
     environment
   }
@@ -71,17 +71,17 @@ trait Environment extends Parser {
           |Conductmat = 2.300000e+004
           |Outil 0
           |alphat = 2.000000e+003
-          |tempout = 1000.000000
+          |tempout = ${Util.trimmedFormatter(args.temperature)}
           |effusoutil = 1.176362e+004
           |Face libre
           |alphat = 1.000000e+001
-          |tempext = 1000.000000
+          |tempext = ${Util.trimmedFormatter(args.temperature)}
           |epsilon = 8.800000e-001
           |.FIN THERMIQUE
           |.PILOTAGE
           |File = $STEERING,
-          |hauteur actuelle = 12.00,
-          |hauteur finale = 7.522
+          |hauteur actuelle = ${Util.trimmedFormatter(args.interval.max)},
+          |hauteur finale = ${Util.trimmedFormatter(args.interval.min)}
           |.FIN PILOTAGE
           |.EXECUTION
           |Sans Visualisation

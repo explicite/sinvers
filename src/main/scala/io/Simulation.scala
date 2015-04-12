@@ -12,8 +12,8 @@ class Simulation extends Actor with ActorLogging {
   val progress = context.actorOf(Props[Progress])
 
   override def receive: Receive = {
-    case Optimize(forge, mesh, out, experiment, temperature, strainRate) =>
-      val function = FitnessFunction(forge, mesh, out, temperature, context.system, experiment, KGF, progress)
+    case Optimize(forge, simulation, experiment, temperature, strainRate) =>
+      val function = FitnessFunction(forge, simulation, temperature, context.system, experiment, KGF, progress)
 
       val bounds = Seq(
         StaticInterval(1200, 1600), //a1

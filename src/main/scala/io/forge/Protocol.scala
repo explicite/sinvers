@@ -2,6 +2,8 @@ package io.forge
 
 import java.nio.file.Path
 
+import data.Samples
+import opt.Interval
 import reo.HSArgs
 
 object Protocol {
@@ -13,6 +15,6 @@ object Protocol {
   case object Stop
 
   //data container
-  case class Parameters(mesh: Path, out: Path, steering: Path, temperature: Double, hs: HSArgs)
+  case class Parameters(sample: Samples, steering: Path, interval: Interval, temperature: Double, hs: HSArgs)
 
 }

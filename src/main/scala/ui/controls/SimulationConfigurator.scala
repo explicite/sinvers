@@ -3,7 +3,7 @@ package ui.controls
 import java.nio.file.{ Path, Paths }
 
 import akka.actor.{ Props, Actor, ActorLogging }
-import data.DataContainer
+import data.{ Samples, DataContainer }
 import io.Protocol.Optimize
 import io.Simulation
 import ui.Protocol.{ Absent, Hide, Present, Show }
@@ -12,9 +12,10 @@ import ui.controls.Protocol.Slice
 
 import scala.util.{ Failure, Success, Try }
 import scalafx.Includes._
+import scalafx.collections.ObservableBuffer
 import scalafx.event.ActionEvent
 import scalafx.geometry.Insets
-import scalafx.scene.control.{ Button, TextField }
+import scalafx.scene.control.{ ComboBox, Button, TextField }
 import scalafx.scene.layout.{ HBox, VBox }
 import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.ExtensionFilter
@@ -46,46 +47,9 @@ class SimulationConfigurator extends Actor with ActorLogging {
     new HBox { children = List(forgeInput, forgeDirButton) }
   }
 
-  val meshInput = new TextField {
-    promptText = "mesh"
-  }
-
-  val mesh = {
-    val meshDirButton = new Button {
-      text = "mesh file"
-      onAction = (ae: ActionEvent) => {
-        val fileChooser = new FileChooser() {
-          title = "Pick a mesh file"
-          selectedExtensionFilter = new ExtensionFilter("Mesh", "*.may")
-        }
-        Try(fileChooser.showOpenDialog(configurator.getParent.getScene.window()).getPath) match {
-          case Success(path) => meshInput.text = path
-          case Failure(err)  => log.error(err.getMessage)
-        }
-      }
-    }
-    new HBox { children = List(meshInput, meshDirButton) }
-  }
-
-  val outInput = new TextField {
-    promptText = "out"
-  }
-
-  val out = {
-    val outDirButton = new Button {
-      text = "out file"
-      onAction = (ae: ActionEvent) => {
-        val fileChooser = new FileChooser() {
-          title = "Pick a out file"
-          selectedExtensionFilter = new ExtensionFilter("Out", "*.out")
-        }
-        Try(fileChooser.showOpenDialog(configurator.getParent.getScene.window()).getPath) match {
-          case Success(path) => outInput.text = path
-          case Failure(err)  => log.error(err.getMessage)
-        }
-      }
-    }
-    new HBox { children = List(outInput, outDirButton) }
+  val samples = new ComboBox[Samples] {
+    promptText = "samples"
+    items = ObservableBuffer(Samples.TenToTwelve)
   }
 
   val experimentInput = new TextField {
@@ -143,8 +107,7 @@ class SimulationConfigurator extends Actor with ActorLogging {
     case Slice(slice) =>
       context.system.actorOf(Props[Simulation]) ! Optimize(
         Paths.get(forgeInput.text.value),
-        Paths.get(meshInput.text.value),
-        Paths.get(outInput.text.value),
+        samples.getSelectionModel.getSelectedItem,
         slice,
         temperature.text.value.toDouble,
         strainRate.text.value.toDouble
@@ -155,12 +118,10 @@ class SimulationConfigurator extends Actor with ActorLogging {
   }
 
   @throws[Exception](classOf[Exception])
-  override def preStart(): Unit = configurator.children = List(forge, mesh, out, experiment, temperature, strainRate, decision)
+  override def preStart(): Unit = configurator.children = List(forge, samples, experiment, temperature, strainRate, decision)
 
   private def cleanup(): Unit = {
     forgeInput.text = null
-    meshInput.text = null
-    outInput.text = null
     experimentInput.text = null
     temperature.text = null
     strainRate.text = null

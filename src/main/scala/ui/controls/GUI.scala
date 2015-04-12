@@ -1,7 +1,7 @@
 package ui.controls
 
 import akka.actor.{ Actor, ActorLogging, Props }
-import db.Repositors
+import db.Repositories
 import ui.Protocol._
 
 import scala.collection.mutable
@@ -67,7 +67,7 @@ class GUI extends Actor with ActorLogging {
 
   @throws[Exception](classOf[Exception])
   override def preStart(): Unit = {
-    Repositors.createSchema()
+    Repositories.createSchema()
     stage.show()
   }
 
