@@ -1,4 +1,4 @@
-package util.jfxutils;
+package util.jfx;
 
 import javafx.event.Event;
 import javafx.event.EventHandler;

@@ -17,22 +17,26 @@ class GUI extends Actor with ActorLogging {
   val chart = context.actorOf(Props[FitnessChart], "fitness-chart")
   val simulation = context.actorOf(Props[SimulationConfigurator], "simulation")
   val simulationList = context.actorOf(Props[SimulationList], "simulation-list")
+  val configuration = context.actorOf(Props[Configuration], "configuration")
 
   val stages = mutable.Set.empty[Stage]
 
   val menuBar = new MenuBar {
     menus = List(
-      new Menu("simulation") {
+      new Menu("invers") {
         items = List(
           new MenuItem("new       ") {
-            onAction = {
-              e: ActionEvent => simulation ! Present
-            }
+            onAction = { e: ActionEvent => simulation ! Present }
           },
           new MenuItem("list") {
-            onAction = {
-              e: ActionEvent => simulationList ! Present
-            }
+            onAction = { e: ActionEvent => simulationList ! Present }
+          }
+        )
+      },
+      new Menu("conf") {
+        items = List(
+          new MenuItem("edit") {
+            onAction = { e: ActionEvent => configuration ! Present }
           }
         )
       }

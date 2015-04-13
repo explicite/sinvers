@@ -9,8 +9,8 @@ import opt.StaticInterval
 import ui.Protocol.{ Hide, Show }
 import ui.controls.DataChart.SetData
 import ui.controls.Protocol.Slice
-import util.jfxutils.SFXChartUtil
-import util.jfxutils.chart.ChartPanManager
+import util.jfx.SFXChartUtil
+import util.jfx.chart.ChartPanManager
 
 import scalafx.Includes._
 import scalafx.collections.ObservableBuffer

@@ -1,4 +1,4 @@
-package util.jfxutils
+package util.jfx
 
 import javafx.collections.ObservableList
 import javafx.scene.{ Group, Node }

@@ -1,5 +1,5 @@
 
-package util.jfxutils.chart;
+package util.jfx.chart;
 
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
@@ -8,7 +8,7 @@ import javafx.scene.chart.Axis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.layout.Region;
 
-import static util.jfxutils.SFXUtil.*;
+import static util.jfx.SFXUtil.*;
 
 public class XYChartInfo {
 	private final XYChart<?,?> chart;

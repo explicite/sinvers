@@ -1,6 +1,5 @@
 package data
 
-import math.PolynomialSplineFunction
 import opt.Interval
 
 trait Container {

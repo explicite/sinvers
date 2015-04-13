@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package util.jfxutils.chart;
+package util.jfx.chart;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;

@@ -1,5 +1,5 @@
 
-package util.jfxutils.chart;
+package util.jfx.chart;
 
 import java.text.NumberFormat;
 

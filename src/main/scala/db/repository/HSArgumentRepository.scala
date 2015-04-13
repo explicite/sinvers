@@ -4,6 +4,7 @@ import db.{ HSArguments, HSArgument, HSArgumentId, DbConnection }
 import scala.slick.driver.HsqldbDriver.simple._
 
 object HSArgumentRepository extends DbConnection {
+
   def byIdQuery(id: HSArgumentId) = HSArguments.query.filter(_.id === id)
 
   def findById(id: HSArgumentId): HSArgument = withSession {

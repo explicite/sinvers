@@ -1,4 +1,4 @@
-package util.jfxutils.chart;
+package util.jfx.chart;
 
 
 public interface AxisTickFormatter {

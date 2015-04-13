@@ -1,11 +1,10 @@
-package util.jfxutils.chart;
+package util.jfx.chart;
 
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.chart.ValueAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.input.MouseEvent;
-import util.jfxutils.EventHandlerManager;
+import util.jfx.EventHandlerManager;
 
 public class ChartPanManager {
 

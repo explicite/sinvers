@@ -1,4 +1,4 @@
-package util.jfxutils.chart;
+package util.jfx.chart;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -20,7 +20,7 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
-import util.jfxutils.EventHandlerManager;
+import util.jfx.EventHandlerManager;
 
 
 public class ChartZoomManager {

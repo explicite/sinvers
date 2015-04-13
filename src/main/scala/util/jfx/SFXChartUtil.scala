@@ -1,4 +1,4 @@
-package util.jfxutils
+package util.jfx
 
 import javafx.event.EventHandler
 import javafx.scene.chart.XYChart
@@ -6,7 +6,7 @@ import javafx.scene.input.MouseEvent
 import javafx.scene.paint.Color
 import javafx.scene.shape.{ Rectangle, StrokeType }
 
-import util.jfxutils.chart.ChartZoomManager
+import util.jfx.chart.ChartZoomManager
 
 import scalafx.scene.Node
 import scalafx.scene.layout.StackPane

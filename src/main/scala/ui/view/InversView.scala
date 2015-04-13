@@ -1,8 +1,8 @@
 package ui.view
 
-import db.SimulationId
+import db.InversId
 
-case class SimulationView(id: SimulationId,
+case class InversView(id: InversId,
   temperature: Double,
   strainRate: Double,
   a1: Double,

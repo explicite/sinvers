@@ -4,10 +4,10 @@ import javafx.beans.value
 import javafx.beans.value.ChangeListener
 
 import akka.actor.{ Actor, ActorLogging }
-import db.service.SimulationService
-import db.{ DbConnection, SimulationId }
+import db.service.InversService
+import db.{ DbConnection, InversId }
 import ui.Protocol.{ Absent, Hide, Present, Show }
-import ui.view.SimulationView
+import ui.view.InversView
 import util.Util.scienceLowFormatter
 
 import scalafx.Includes._
@@ -21,26 +21,26 @@ import scalafx.scene.layout.VBox
 
 class SimulationList extends Actor with ActorLogging with DbConnection {
 
-  def simulations = ObservableBuffer(SimulationService.findAll())
+  def simulations = ObservableBuffer(InversService.findAll())
 
-  val list = new TableView[SimulationView] {
+  val list = new TableView[InversView] {
     columns += (
-      new TableColumn[SimulationView, Long] {
+      new TableColumn[InversView, Long] {
         text = "id"
         cellValueFactory = { features => ObjectProperty[Long](features.value.id.value) }
         editable = false
       },
-      new TableColumn[SimulationView, Double] {
+      new TableColumn[InversView, Double] {
         text = "tmp[ºC]"
         cellValueFactory = { features => ObjectProperty[Double](features.value.temperature) }
         editable = false
       },
-      new TableColumn[SimulationView, Double] {
+      new TableColumn[InversView, Double] {
         text = "SR[s-1]"
         cellValueFactory = { features => ObjectProperty[Double](features.value.strainRate) }
         editable = false
       },
-      new TableColumn[SimulationView, String] {
+      new TableColumn[InversView, String] {
         text = "args(a1,m1..m9,epss)"
         cellValueFactory = { features =>
           ObjectProperty[String](
@@ -50,22 +50,22 @@ class SimulationList extends Actor with ActorLogging with DbConnection {
         editable = false
         prefWidth = 350
       },
-      new TableColumn[SimulationView, SimulationId] {
+      new TableColumn[InversView, InversId] {
         text = "delete"
-        cellValueFactory = { features => ObjectProperty[SimulationId](features.value.id) }
+        cellValueFactory = { features => ObjectProperty[InversId](features.value.id) }
         cellFactory = { tableColumn =>
-          val cell = new TableCell[SimulationView, SimulationId]()
+          val cell = new TableCell[InversView, InversId]()
           val button: Button = new Button {
             onAction = (ae: ActionEvent) => {
-              SimulationService.deleteById(cell.itemProperty().get())
+              InversService.deleteById(cell.itemProperty().get())
               refresh()
             }
             graphic = new ImageView {
               image = new Image(getClass.getResourceAsStream("/css/icon_close_alt.png"))
             }
           }
-          cell.itemProperty().addListener(new ChangeListener[SimulationId] {
-            override def changed(observable: value.ObservableValue[_ <: SimulationId], oldValue: SimulationId, newValue: SimulationId): Unit = {
+          cell.itemProperty().addListener(new ChangeListener[InversId] {
+            override def changed(observable: value.ObservableValue[_ <: InversId], oldValue: InversId, newValue: InversId): Unit = {
               if (newValue == null) {
                 cell.setGraphic(null)
               } else {

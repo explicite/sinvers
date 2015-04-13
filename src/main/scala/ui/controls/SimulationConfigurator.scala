@@ -4,6 +4,8 @@ import java.nio.file.{ Path, Paths }
 
 import akka.actor.{ Props, Actor, ActorLogging }
 import data.{ Samples, DataContainer }
+import db.Configurations
+import db.repository.ConfigurationRepository
 import io.Protocol.Optimize
 import io.Simulation
 import ui.Protocol.{ Absent, Hide, Present, Show }
@@ -18,33 +20,12 @@ import scalafx.geometry.Insets
 import scalafx.scene.control.{ ComboBox, Button, TextField }
 import scalafx.scene.layout.{ HBox, VBox }
 import scalafx.stage.FileChooser
-import scalafx.stage.FileChooser.ExtensionFilter
 
 class SimulationConfigurator extends Actor with ActorLogging {
+
   val configurator = new VBox() {
     padding = Insets(20)
     spacing = 10
-  }
-
-  val forgeInput = new TextField {
-    promptText = "forge"
-  }
-
-  val forge = {
-    val forgeDirButton = new Button {
-      text = "forge exe"
-      onAction = (ae: ActionEvent) => {
-        val fileChooser = new FileChooser() {
-          title = "Pick a forge exe"
-          selectedExtensionFilter = new ExtensionFilter("Exe", "*.exe")
-        }
-        Try(fileChooser.showOpenDialog(configurator.getParent.getScene.window()).getPath) match {
-          case Success(path) => forgeInput.text = path
-          case Failure(err)  => log.error(err.getMessage)
-        }
-      }
-    }
-    new HBox { children = List(forgeInput, forgeDirButton) }
   }
 
   val samples = new ComboBox[Samples] {
@@ -106,7 +87,7 @@ class SimulationConfigurator extends Actor with ActorLogging {
   def waitingForSlice: Receive = {
     case Slice(slice) =>
       context.system.actorOf(Props[Simulation]) ! Optimize(
-        Paths.get(forgeInput.text.value),
+        Paths.get(ConfigurationRepository.findByKey(Configurations.forge).get.value),
         samples.getSelectionModel.getSelectedItem,
         slice,
         temperature.text.value.toDouble,
@@ -118,10 +99,9 @@ class SimulationConfigurator extends Actor with ActorLogging {
   }
 
   @throws[Exception](classOf[Exception])
-  override def preStart(): Unit = configurator.children = List(forge, samples, experiment, temperature, strainRate, decision)
+  override def preStart(): Unit = configurator.children = List(experiment, temperature, strainRate, samples, decision)
 
   private def cleanup(): Unit = {
-    forgeInput.text = null
     experimentInput.text = null
     temperature.text = null
     strainRate.text = null
@@ -130,6 +110,5 @@ class SimulationConfigurator extends Actor with ActorLogging {
 }
 
 object Protocol {
-  case class Files(forge: Path, mesh: Path, out: Path, experiment: Path)
   case class Slice(dataContainer: DataContainer)
 }
