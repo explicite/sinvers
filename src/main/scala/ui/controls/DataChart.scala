@@ -8,7 +8,7 @@ import data.DataContainer
 import opt.StaticInterval
 import ui.Protocol.{ Hide, Show }
 import ui.controls.DataChart.SetData
-import ui.controls.Protocol.Slice
+import ui.controls.InversProtocol.Slice
 import util.jfx.SFXChartUtil
 import util.jfx.chart.ChartPanManager
 

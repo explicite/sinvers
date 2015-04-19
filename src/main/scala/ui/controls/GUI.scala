@@ -15,8 +15,10 @@ import scalafx.stage.Stage
 
 class GUI extends Actor with ActorLogging {
   val chart = context.actorOf(Props[FitnessChart], "fitness-chart")
-  val simulation = context.actorOf(Props[SimulationConfigurator], "simulation")
-  val simulationList = context.actorOf(Props[SimulationList], "simulation-list")
+  val inversConfigurator = context.actorOf(Props[InversConfigurator], "invers-configurator")
+  val fullInversConfigurator = context.actorOf(Props[FullInversConfigurator], "full-invers-configurator")
+  val fullInversList = context.actorOf(Props[FullInversList], "full-invers-list")
+  val simulationList = context.actorOf(Props[InversList], "invers-list")
   val configuration = context.actorOf(Props[Configuration], "configuration")
 
   val stages = mutable.Set.empty[Stage]
@@ -26,10 +28,19 @@ class GUI extends Actor with ActorLogging {
       new Menu("invers") {
         items = List(
           new MenuItem("new       ") {
-            onAction = { e: ActionEvent => simulation ! Present }
+            onAction = { e: ActionEvent => inversConfigurator ! Present }
           },
           new MenuItem("list") {
             onAction = { e: ActionEvent => simulationList ! Present }
+          }
+        )
+      }, new Menu("full invers") {
+        items = List(
+          new MenuItem("new       ") {
+            onAction = { e: ActionEvent => fullInversConfigurator ! Present }
+          },
+          new MenuItem("list") {
+            onAction = { e: ActionEvent => fullInversList ! Present }
           }
         )
       },

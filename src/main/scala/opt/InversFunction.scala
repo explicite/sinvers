@@ -15,7 +15,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-case class FitnessFunction(forge: Path,
+case class InversFunction(forge: Path,
     sample: Samples,
     temperature: Double,
     system: ActorSystem,

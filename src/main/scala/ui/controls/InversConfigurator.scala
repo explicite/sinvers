@@ -6,12 +6,12 @@ import akka.actor.{ Props, Actor, ActorLogging }
 import data.{ Samples, DataContainer }
 import db.Configurations
 import db.repository.ConfigurationRepository
-import io.Protocol.Optimize
-import io.Simulation
+import io.Protocol.OptimizeInvers
+import io.InversSimulation
 import opt.StaticInterval
 import ui.Protocol.{ Absent, Hide, Present, Show }
 import ui.controls.DataChart.SetData
-import ui.controls.Protocol.Slice
+import ui.controls.InversProtocol.Slice
 
 import scala.util.{ Failure, Success, Try }
 import scalafx.Includes._
@@ -22,7 +22,7 @@ import scalafx.scene.control.{ ComboBox, Button, TextField }
 import scalafx.scene.layout.{ HBox, VBox }
 import scalafx.stage.FileChooser
 
-class SimulationConfigurator extends Actor with ActorLogging {
+class InversConfigurator extends Actor with ActorLogging {
 
   val configurator = new HBox() {
     padding = Insets(20)
@@ -59,9 +59,12 @@ class SimulationConfigurator extends Actor with ActorLogging {
   val okButton = new Button {
     text = "ok"
     onAction = (ae: ActionEvent) => {
-      val dataContainer = DataContainer(Paths.get(experimentInput.text.value).toFile)
-      context.actorOf(Props[DataChart]) ! SetData(dataContainer)
-      context become waitingForSlice
+      Try(DataContainer(Paths.get(experimentInput.text.value).toFile)) match {
+        case Success(dataContainer) =>
+          context.actorOf(Props[DataChart]) ! SetData(dataContainer)
+          context become waitingForSlice
+        case Failure(err) => log.error(err.getMessage)
+      }
     }
   }
 
@@ -79,7 +82,7 @@ class SimulationConfigurator extends Actor with ActorLogging {
   //hs arguments
   val a1MinInput = new TextField {
     promptText = "a1 min"
-    text = "1200"
+    text = "800"
   }
 
   val a1MaxInput = new TextField {
@@ -89,22 +92,22 @@ class SimulationConfigurator extends Actor with ActorLogging {
 
   val m1MinInput = new TextField {
     promptText = "m1 min"
-    text = "-0.001"
+    text = "-0.003"
   }
 
   val m1MaxInput = new TextField {
     promptText = "m1 max"
-    text = "-0.003"
+    text = "-0.001"
   }
 
   val m2MinInput = new TextField {
     promptText = "m2 min"
-    text = "-0.001"
+    text = "-0.25"
   }
 
   val m2MaxInput = new TextField {
     promptText = "m2 max"
-    text = "-0.25"
+    text = "-0.001"
   }
 
   val m3MinInput = new TextField {
@@ -228,7 +231,7 @@ class SimulationConfigurator extends Actor with ActorLogging {
         case (min, max) =>
           StaticInterval(min.text.value.toDouble, max.text.value.toDouble)
       }
-      context.system.actorOf(Props[Simulation]) ! Optimize(
+      context.system.actorOf(Props[InversSimulation]) ! OptimizeInvers(
         Paths.get(ConfigurationRepository.findByKey(Configurations.forge).get.value),
         samples.getSelectionModel.getSelectedItem,
         slice,
@@ -254,6 +257,6 @@ class SimulationConfigurator extends Actor with ActorLogging {
 
 }
 
-object Protocol {
+object InversProtocol {
   case class Slice(dataContainer: DataContainer)
 }

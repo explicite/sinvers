@@ -18,7 +18,8 @@ import scalafx.scene.image.{ Image, ImageView }
 import scalafx.scene.layout.{ HBox, VBox }
 import scalafx.scene.text.Text
 
-class Progress extends Actor with ActorLogging with DbConnection {
+class InversProgress extends Actor with ActorLogging with DbConnection {
+  implicit val executionContext = context.system.dispatchers.lookup("scalafx-dispatcher")
 
   import ui.controls.ProgressProtocol._
 
@@ -88,13 +89,14 @@ class Progress extends Actor with ActorLogging with DbConnection {
 
   def set(start: Long, max: Double): Receive = {
     case Iteration(_, stamp) =>
-      progressBar.setProgress(progressBar.progress.value + 1 / max)
-      eta.text = {
+      progressBar.synchronized {
+        progressBar.setProgress(progressBar.progress.value + 1 / max)
         val iterations = max * progressBar.progress.value
         val performance = ((stamp - start) / 1e9) / iterations
         val duration = Duration.ofSeconds(((max - iterations) * performance).toLong)
-        s"ETA: $duration s perf: ${formatter(1 / performance)} it/s"
+        eta.text = s"ETA: $duration s perf: ${formatter(1 / performance)} it/s"
       }
+
     case SetEnd(temperature, strainRate, newArgs) =>
       saveButton.disable = false
       removeButton.disable = false

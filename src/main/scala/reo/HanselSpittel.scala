@@ -19,7 +19,7 @@ import scala.io.Source
  * @param m7 sensitivity of the deformation of the material
  * @param m8 the temperature dependence of strain rate
  * @param m9 the temperature coefficient of the material of the impact
- * @param epsSs ???
+ * @param epsSs behavior after undergoing plastic state [0,1]
  */
 case class HSArgs(a1: Double = 0,
     m1: Double = 0,
@@ -51,9 +51,7 @@ object HSArgs {
     m1: Double,
     m2: Double,
     m3: Double,
-    m4: Double): HSArgs = {
-    HSArgs(a1, m1, m2, m3, m4, 0d, 0d, 0d, 0d, 0d, 0d)
-  }
+    m4: Double): HSArgs = HSArgs(a1, m1, m2, m3, m4, 0d, 0d, 0d, 0d, 0d, 0d)
 
   def apply(a1: Double,
     m1: Double,
@@ -64,9 +62,8 @@ object HSArgs {
     m6: Double,
     m7: Double,
     m8: Double,
-    m9: Double): HSArgs = {
-    HSArgs(a1, m1, m2, m3, m4, m5, m6, m7, m8, m9, 0d)
-  }
+    m9: Double): HSArgs = HSArgs(a1, m1, m2, m3, m4, m5, m6, m7, m8, m9, 0d)
+
 }
 
 case class HanselSpittel(file: File) extends Parser {

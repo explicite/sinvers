@@ -9,7 +9,7 @@ object Repositories extends DbConnection {
   //TODO create initialization
   def createSchema() = withSession {
     implicit session =>
-      Try(createIfNotExists(Configurations.query, HSArguments.query, Inverses.query))
+      Try(createIfNotExists(Configurations.query, HSArguments.query, Inverses.query, FullInverses.query, FullInversInverses.query))
   }
 
   private def createIfNotExists(tables: TableQuery[_ <: Table[_]]*)(implicit session: Session) {

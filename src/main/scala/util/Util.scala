@@ -13,6 +13,7 @@ object Util {
 
   def retry[T](n: Int)(fn: => T): Try[T] = {
     Try {
+      Thread.sleep(100 * (11 - n))
       fn
     } match {
       case x: Success[T] => x
@@ -22,7 +23,7 @@ object Util {
   }
 
   def copy(source: Path, target: Path): Path = {
-    Util.retry(5) {
+    Util.retry(10) {
       Files.copy(source, target, REPLACE_EXISTING)
     } match {
       case Success(path) => path
@@ -31,8 +32,7 @@ object Util {
   }
 
   def delete(target: Path): Path = {
-    Util.retry(5) {
-      Thread.sleep(200)
+    Util.retry(10) {
       if (!Files.notExists(target))
         FileManipulator.DeleteDirectory(target)
       target

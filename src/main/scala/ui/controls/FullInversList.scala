@@ -4,10 +4,10 @@ import javafx.beans.value
 import javafx.beans.value.ChangeListener
 
 import akka.actor.{ Actor, ActorLogging }
-import db.service.InversService
-import db.{ DbConnection, InversId }
+import db.service.FullInversService
+import db.{ DbConnection, FullInversId }
 import ui.Protocol.{ Absent, Hide, Present, Show }
-import ui.view.InversView
+import ui.view.FullInversView
 import util.Util.scienceLowFormatter
 
 import scalafx.Includes._
@@ -19,28 +19,18 @@ import scalafx.scene.control._
 import scalafx.scene.image.{ Image, ImageView }
 import scalafx.scene.layout.VBox
 
-class SimulationList extends Actor with ActorLogging with DbConnection {
+class FullInversList extends Actor with ActorLogging with DbConnection {
 
-  def simulations = ObservableBuffer(InversService.findAll())
+  def simulations = ObservableBuffer(FullInversService.findAll())
 
-  val list = new TableView[InversView] {
+  val list = new TableView[FullInversView] {
     columns += (
-      new TableColumn[InversView, Long] {
+      new TableColumn[FullInversView, Long] {
         text = "id"
         cellValueFactory = { features => ObjectProperty[Long](features.value.id.value) }
         editable = false
       },
-      new TableColumn[InversView, Double] {
-        text = "tmp[ºC]"
-        cellValueFactory = { features => ObjectProperty[Double](features.value.temperature) }
-        editable = false
-      },
-      new TableColumn[InversView, Double] {
-        text = "SR[s-1]"
-        cellValueFactory = { features => ObjectProperty[Double](features.value.strainRate) }
-        editable = false
-      },
-      new TableColumn[InversView, String] {
+      new TableColumn[FullInversView, String] {
         text = "args(a1,m1..m9,epss)"
         cellValueFactory = { features =>
           ObjectProperty[String](
@@ -50,22 +40,22 @@ class SimulationList extends Actor with ActorLogging with DbConnection {
         editable = false
         prefWidth = 350
       },
-      new TableColumn[InversView, InversId] {
+      new TableColumn[FullInversView, FullInversId] {
         text = "delete"
-        cellValueFactory = { features => ObjectProperty[InversId](features.value.id) }
+        cellValueFactory = { features => ObjectProperty[FullInversId](features.value.id) }
         cellFactory = { tableColumn =>
-          val cell = new TableCell[InversView, InversId]()
+          val cell = new TableCell[FullInversView, FullInversId]()
           val button: Button = new Button {
             onAction = (ae: ActionEvent) => {
-              InversService.deleteById(cell.itemProperty().get())
+              FullInversService.deleteById(cell.itemProperty().get())
               refresh()
             }
             graphic = new ImageView {
               image = new Image(getClass.getResourceAsStream("/css/icon_close_alt.png"))
             }
           }
-          cell.itemProperty().addListener(new ChangeListener[InversId] {
-            override def changed(observable: value.ObservableValue[_ <: InversId], oldValue: InversId, newValue: InversId): Unit = {
+          cell.itemProperty().addListener(new ChangeListener[FullInversId] {
+            override def changed(observable: value.ObservableValue[_ <: FullInversId], oldValue: FullInversId, newValue: FullInversId): Unit = {
               if (newValue == null) {
                 cell.setGraphic(null)
               } else {
@@ -80,15 +70,8 @@ class SimulationList extends Actor with ActorLogging with DbConnection {
     )
   }
 
-  val startButton = new Button {
-    text = "Full invers"
-    onAction = (ae: ActionEvent) => {
-      println(list.getSelectionModel.getSelectedItems)
-    }
-  }
-
   val panel = new VBox {
-    children = List(list, startButton)
+    children = List(list)
   }
 
   private def refresh(): Unit = {
@@ -107,5 +90,4 @@ class SimulationList extends Actor with ActorLogging with DbConnection {
   override def preStart(): Unit = {
     list.getSelectionModel.setSelectionMode(SelectionMode.MULTIPLE)
   }
-
 }
