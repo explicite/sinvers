@@ -80,15 +80,8 @@ class InversList extends Actor with ActorLogging with DbConnection {
     )
   }
 
-  val startButton = new Button {
-    text = "Full invers"
-    onAction = (ae: ActionEvent) => {
-      println(list.getSelectionModel.getSelectedItems)
-    }
-  }
-
   val panel = new VBox {
-    children = List(list, startButton)
+    children = List(list)
   }
 
   private def refresh(): Unit = {

@@ -33,7 +33,7 @@ object FullInversService {
   def deleteById(id: FullInversId): Int = {
     FullInversInversRepository.deleteByFullInversId(id)
     HSArgumentRepository.deleteById(FullInversRepository.findById(id).hSArgumentId)
-    FullInversInversRepository.deleteByFullInversId(id)
+    FullInversRepository.deleteById(id)
   }
 
   def fromRow(fullInvers: FullInvers, inversViews: Seq[InversView], hsArgument: HSArgument): FullInversView = {

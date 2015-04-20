@@ -25,7 +25,6 @@ object FullInversInversRepository extends DbConnection {
         case Some(id) =>
           byIdQuery(id).update(row)
           id
-
         case None => (FullInversInverses.query returning FullInversInverses.query.map(_.id)) += row
       }
   }

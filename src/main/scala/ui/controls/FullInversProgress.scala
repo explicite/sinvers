@@ -51,7 +51,6 @@ class FullInversProgress extends Actor with ActorLogging with DbConnection {
     onAction = (ae: ActionEvent) => {
       args.foreach {
         case (inversIds, arg) =>
-          println(args)
           FullInversService.save(inversIds, arg)
           gui ! Remove(progress)
       }

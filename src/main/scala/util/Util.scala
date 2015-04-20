@@ -4,7 +4,6 @@ import java.io.BufferedOutputStream
 import java.nio.file.StandardCopyOption._
 import java.nio.file.StandardOpenOption._
 import java.nio.file.{ Files, Path }
-import java.time.Duration
 
 import scala.util.{ Failure, Success, Try }
 
@@ -57,7 +56,6 @@ object Util {
     val t0 = System.nanoTime()
     val result = block // call-by-name
     val t1 = System.nanoTime()
-    println(s"elapsed time: ${Duration.ofNanos(t1 - t0)}")
     result
   }
 

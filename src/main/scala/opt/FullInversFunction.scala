@@ -9,7 +9,7 @@ case class FullInversFunction(args: Seq[InversView],
 
   val functions = args.map(HSFunction)
 
-  private val strains = (0 to 100).map(_ / 100d)
+  private val strains = (1 to 100).map(_ / 100d)
 
   def fitness(args: Seq[Double]): Double = {
     val Seq(a1, m1, m2, m3, m4, m5, m6, m7, m8, m9, _) = args

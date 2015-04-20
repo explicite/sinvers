@@ -43,7 +43,6 @@ class Configuration extends Actor with ActorLogging {
   val saveButton = new Button {
     text = "save"
     onAction = (ae: ActionEvent) => {
-      println(text.value)
       ConfigurationRepository.save(DbConfiguration(Configurations.forge, forgeInput.text.value))
       context.parent ! Hide(configurator)
     }
