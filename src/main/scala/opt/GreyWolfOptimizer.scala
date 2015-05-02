@@ -14,7 +14,7 @@ case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, bounds: 
    *
    * @return minimum (best position)
    */
-  def min(actors: Int, iterations: Int): Seq[Double] = optimize(actors, iterations)(MIN)
+  def min(actors: Int, iterations: Int): Result = optimize(actors, iterations)(MIN)
 
   /**
    * Find maximum
@@ -24,9 +24,9 @@ case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, bounds: 
    *
    * @return optimum (best position)
    */
-  def max(actors: Int, iterations: Int): Seq[Double] = optimize(actors, iterations)(MAX)
+  def max(actors: Int, iterations: Int): Result = optimize(actors, iterations)(MAX)
 
-  private def optimize(numberOfActors: Int, iterations: Int)(opt: Optimum): Seq[Double] = {
+  private def optimize(numberOfActors: Int, iterations: Int)(opt: Optimum): Result = {
     val dimY = numberOfActors
 
     val alpha = Wolf(List.fill(dimX)(0d), opt.inf)
@@ -39,16 +39,18 @@ case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, bounds: 
       if (iteration < iterations) step(iteration + 1)(context.evolution(2d - iteration * (2d / iterations))) else context
     }
 
-    step(0)(Context(alpha, beta, delta, positions)).alphaOrg.pos
+    val result = step(0)(Context(alpha, beta, delta, positions))
+
+    Result(result.currAlpha.pos, result.currAlpha.score)
   }
 
   case class Wolf(pos: List[Double], score: Double) extends Ordered[Wolf] {
     def compare(that: Wolf): Int = this.score compare that.score
   }
 
-  case class Context(alphaOrg: Wolf,
-      betaOrg: Wolf,
-      deltaOrg: Wolf,
+  case class Context(currAlpha: Wolf,
+      currBeta: Wolf,
+      currDelta: Wolf,
       positions: List[Double]) {
 
     def evolution(a: Double): Context = {
@@ -58,16 +60,16 @@ case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, bounds: 
           case (value, index) =>
             val x = index % dimX
             val cAlpha = Coefficient(a)
-            val dAlpha = abs(cAlpha.y * evaluated.alphaOrg.pos(x) - value)
-            val x1 = evaluated.alphaOrg.pos(x) - cAlpha.x * dAlpha
+            val dAlpha = abs(cAlpha.y * evaluated.currAlpha.pos(x) - value)
+            val x1 = evaluated.currAlpha.pos(x) - cAlpha.x * dAlpha
 
             val cBeta = Coefficient(a)
-            val dBeta = abs(cBeta.y * evaluated.betaOrg.pos(x) - value)
-            val x2 = evaluated.betaOrg.pos(x) - cBeta.x * dBeta
+            val dBeta = abs(cBeta.y * evaluated.currBeta.pos(x) - value)
+            val x2 = evaluated.currBeta.pos(x) - cBeta.x * dBeta
 
             val cDelta = Coefficient(a)
-            val dDelta = abs(cDelta.y * evaluated.deltaOrg.pos(x) - value)
-            val x3 = evaluated.deltaOrg.pos(x) - cDelta.x * dDelta
+            val dDelta = abs(cDelta.y * evaluated.currDelta.pos(x) - value)
+            val x3 = evaluated.currDelta.pos(x) - cDelta.x * dDelta
 
             (x1 + x2 + x3) / 3d
         }
@@ -93,14 +95,14 @@ case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, bounds: 
         Delta: Wolf)(propositions: List[Wolf]): Context = {
         propositions match {
           case head :: tail =>
-            val alpha = if (head < alphaOrg) head else Alpha
-            val beta = if (head > alpha && head < betaOrg) head else Beta
-            val delta = if (head > alpha && head > beta && head < deltaOrg) head else Delta
+            val alpha = if (head < currAlpha) head else Alpha
+            val beta = if (head > alpha && head < currBeta) head else Beta
+            val delta = if (head > alpha && head > beta && head < currDelta) head else Delta
             reg(alpha, beta, delta)(tail)
           case _ => Context(Alpha, Beta, Delta, evaluated.map(_._1).flatten)
         }
       }
-      reg(alphaOrg, betaOrg, deltaOrg)(propositions)
+      reg(currAlpha, currBeta, currDelta)(propositions)
     }
 
   }

@@ -12,9 +12,9 @@ case class FullInversFunction(args: Seq[InversView],
   private val strains = (1 to 100).map(_ / 100d)
 
   def fitness(args: Seq[Double]): Double = {
-    val Seq(a1, m1, m2, m3, m4, m5, m6, m7, m8, m9, _) = args
     val fitness = functions.map { function =>
-      strains.map(strain => function.fitness(a1, m1, m2, m3, m4, m5, m6, m7, m8, m9, strain)).sum
+      val result = strains.map(strain => function.fitness(args, strain)).sum / strains.size
+      result - scala.math.E
     }.sum
 
     progress ! Iteration(fitness, System.nanoTime())

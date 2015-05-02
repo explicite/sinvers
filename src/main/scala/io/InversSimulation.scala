@@ -4,7 +4,6 @@ import akka.actor.{ Actor, ActorLogging, Props }
 import data.KGF
 import io.Protocol.OptimizeInvers
 import opt.{ InversFunction, GreyWolfOptimizer }
-import reo.HSArgs
 import ui.controls.InversProgress
 
 class InversSimulation extends Actor with ActorLogging {
@@ -18,6 +17,6 @@ class InversSimulation extends Actor with ActorLogging {
       //create new progress bar for minimize
       progress ! ui.controls.ProgressProtocol.SetStart(System.nanoTime(), wolfs * iterations)
       val min = optimizer.min(wolfs, iterations)
-      progress ! ui.controls.ProgressProtocol.SetEnd(temperature, strainRate, HSArgs(min))
+      progress ! ui.controls.ProgressProtocol.SetEnd(temperature, strainRate, min)
   }
 }

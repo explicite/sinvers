@@ -21,7 +21,7 @@ object InversService {
   }
 
   def fromRow(invers: Invers, hsArgs: HSArgument): InversView = {
-    InversView(invers.id.get, invers.temperature, invers.strainRate, hsArgs.a1, hsArgs.m1, hsArgs.m2, hsArgs.m3, hsArgs.m4, hsArgs.m5, hsArgs.m6, hsArgs.m7, hsArgs.m8, hsArgs.m9, hsArgs.epsSs)
+    InversView(invers.id.get, invers.temperature, invers.strainRate, invers.score, hsArgs.a1, hsArgs.m1, hsArgs.m2, hsArgs.m3, hsArgs.m4, hsArgs.m5, hsArgs.m6, hsArgs.m7, hsArgs.m8, hsArgs.m9, hsArgs.epsSs)
   }
 
   def deleteById(id: InversId): Int = {

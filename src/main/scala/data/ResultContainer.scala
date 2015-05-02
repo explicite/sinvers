@@ -14,7 +14,7 @@ case class ResultContainer(time: Seq[Double],
 
   type T = ResultContainer
 
-  def fit(interpolator: PolynomialSplineFunction): Double = {
+  def score(interpolator: PolynomialSplineFunction): Double = {
     if (force.size >= 30) {
       val (forceToInter, jawToInter) = sections(force.zip(jaw), 5).unzip
       val interpolatedForce = jawToInter.map(interpolator.apply)

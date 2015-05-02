@@ -41,6 +41,11 @@ class InversList extends Actor with ActorLogging with DbConnection {
         editable = false
       },
       new TableColumn[InversView, String] {
+        text = "score"
+        cellValueFactory = { features => ObjectProperty[String](s"${scienceLowFormatter(features.value.score)}") }
+        editable = false
+      },
+      new TableColumn[InversView, String] {
         text = "args(a1,m1..m9,epss)"
         cellValueFactory = { features =>
           ObjectProperty[String](

@@ -4,7 +4,8 @@ import scala.slick.driver.HsqldbDriver.simple._
 case class FullInversId(value: Long) extends MappedTo[Long]
 
 case class FullInvers(id: Option[FullInversId],
-  hSArgumentId: HSArgumentId)
+  hSArgumentId: HSArgumentId,
+  score: Double)
 
 class FullInverses(tag: Tag)
     extends Table[FullInvers](tag, "full_invers") {
@@ -14,11 +15,13 @@ class FullInverses(tag: Tag)
 
   def hsArgumentId = column[HSArgumentId]("hs_arguments_id")
 
+  def score = column[Double]("score")
+
   //constraints
   def hsArgument = foreignKey("hs_arguments_fk", hsArgumentId, HSArguments.query)(_.id)
 
   //others
-  def * = (id.?, hsArgumentId) <> (FullInvers.tupled, FullInvers.unapply)
+  def * = (id.?, hsArgumentId, score) <> (FullInvers.tupled, FullInvers.unapply)
 
 }
 

@@ -48,7 +48,7 @@ case class InversFunction(forge: Path,
     val request = (supervisor ? Job(forge, parameters)).mapTo[ResultContainer]
 
     val result = Await.result(request, timeout.duration)
-    val fitness = result.slice(interval).fit(interpolator)
+    val fitness = result.slice(interval).score(interpolator)
 
     progress ! Iteration(fitness, System.nanoTime())
     fitness

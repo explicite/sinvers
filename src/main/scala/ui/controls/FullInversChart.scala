@@ -26,22 +26,27 @@ class FullInversChart extends Actor with ActorLogging with DbConnection {
       val fullInversView = FullInversService.findById(fullInversId)
       val strains = (1 to 100).map(_ / 100d)
       val inversFunctions = fullInversView.inverses.map(HSFunction)
-      val FullInversView(id, _, a1, m1, m2, m3, m4, m5, m6, m7, m8, m9, epsSs) = fullInversView
+      val FullInversView(id, _, _, a1, m1, m2, m3, m4, m5, m6, m7, m8, m9, epsSs) = fullInversView
       val optimizedFunctions = fullInversView.inverses.map {
         inversView =>
-          val optimizedInvers = InversView(inversView.id, inversView.temperature, inversView.strainRate, a1, m1, m2, m3, m4, m5, m6, m7, m8, m9, epsSs)
+          val optimizedInvers = InversView(inversView.id, inversView.temperature, inversView.strainRate, inversView.score, a1, m1, m2, m3, m4, m5, m6, m7, m8, m9, epsSs)
           HSFunction(optimizedInvers)
       }
-      val functions = inversFunctions ++: optimizedFunctions
 
-      val data = functions.map(function => (strains.zip(strains.map(function.apply)).map { case (x, y) => XYChart.Data[Number, Number](x, y) }, function.args.temperature, function.args.strainRate))
+      val inversFunctionsWithTag = inversFunctions.map(fun => (fun, "org"))
+      val optimizedFunctionWithTag = optimizedFunctions.map(fun => (fun, "fi"))
+      val functions = inversFunctionsWithTag ++: optimizedFunctionWithTag
+
+      val data = functions.map {
+        case (function, tag) => (strains.zip(strains.map(function.apply)).map { case (x, y) => XYChart.Data[Number, Number](x, y) }, function.args.temperature, function.args.strainRate, tag)
+      }
 
       val series = data.map {
-        case (sx, tmp, str) =>
+        case (sx, tmp, str, tag) =>
           Series.sfxXYChartSeries2jfx(
             new XYChart.Series[Number, Number] {
               data = sx
-              name = s"tmp:$tmp, str:$str"
+              name = s"$tag {tmp:$tmp, str:$str}"
             }
           )
       }

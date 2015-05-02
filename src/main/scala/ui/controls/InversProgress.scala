@@ -5,12 +5,14 @@ import java.time.Duration
 import akka.actor.{ Actor, ActorLogging }
 import db.{ Invers, HSArgument, DbConnection }
 import db.repository.{ InversRepository, HSArgumentRepository }
+import opt.Result
 import reo.HSArgs
 import ui.Protocol._
 
 import scala.language.postfixOps
 import scala.math.abs
 import scalafx.Includes._
+import scalafx.application.Platform
 import scalafx.event.ActionEvent
 import scalafx.geometry.{ Insets, Pos }
 import scalafx.scene.control.{ Button, ProgressBar }
@@ -33,7 +35,7 @@ class InversProgress extends Actor with ActorLogging with DbConnection {
     stylesheets add "css/progress-bar.css"
   }
 
-  var args: Option[(Double, Double, HSArgs)] = None
+  var args: Option[(Double, Double, HSArgs, Double)] = None
 
   val eta = new Text {
     text = s"ETA: ? s perf: 0 it/s"
@@ -56,9 +58,9 @@ class InversProgress extends Actor with ActorLogging with DbConnection {
   val saveButton = new Button {
     onAction = (ae: ActionEvent) => {
       args.foreach {
-        case (temperature, strainRate, arg) =>
+        case (temperature, strainRate, arg, score) =>
           val id = HSArgumentRepository.save(HSArgument(None, arg.a1, arg.m1, arg.m2, arg.m3, arg.m4, arg.m5, arg.m6, arg.m7, arg.m8, arg.m9, arg.epsSs))
-          InversRepository.save(Invers(None, id, temperature, strainRate))
+          InversRepository.save(Invers(None, id, temperature, strainRate, score))
           gui ! Remove(progress)
       }
     }
@@ -89,18 +91,19 @@ class InversProgress extends Actor with ActorLogging with DbConnection {
 
   def set(start: Long, max: Double): Receive = {
     case Iteration(_, stamp) =>
-      progressBar.synchronized {
+      Platform.runLater {
         progressBar.setProgress(progressBar.progress.value + 1 / max)
         val iterations = max * progressBar.progress.value
         val performance = ((stamp - start) / 1e9) / iterations
         val duration = Duration.ofSeconds(((max - iterations) * performance).toLong)
-        eta.text = s"ETA: $duration s perf: ${formatter(1 / performance)} it/s"
+        eta.setText(s"ETA: $duration s perf: ${formatter(1 / performance)} it/s")
       }
 
     case SetEnd(temperature, strainRate, newArgs) =>
       saveButton.disable = false
       removeButton.disable = false
-      args = Some(temperature, strainRate, newArgs)
+      args = Some(temperature, strainRate, HSArgs(newArgs.args), newArgs.score)
+      eta.setText(s"score: ${newArgs.score}")
     case Reset =>
       gui ! Remove(progress)
       progressBar.setProgress(0)
@@ -124,6 +127,6 @@ object ProgressProtocol {
 
   case class SetStart(start: Long, max: Double)
 
-  case class SetEnd(temperature: Double, strainRate: Double, hsArgs: HSArgs)
+  case class SetEnd(temperature: Double, strainRate: Double, result: Result)
 
 }

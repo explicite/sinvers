@@ -41,6 +41,11 @@ class FullInversList extends Actor with ActorLogging with DbConnection {
         editable = false
         prefWidth = 350
       },
+      new TableColumn[FullInversView, String] {
+        text = "score"
+        cellValueFactory = { features => ObjectProperty[String](s"${scienceLowFormatter(features.value.score)}") }
+        editable = false
+      },
       new TableColumn[FullInversView, FullInversId] {
         text = "open"
         cellValueFactory = { features => ObjectProperty[FullInversId](features.value.id) }

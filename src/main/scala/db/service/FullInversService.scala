@@ -7,9 +7,9 @@ import ui.view.{ InversView, FullInversView }
 
 object FullInversService {
 
-  def save(inversIds: Seq[InversId], hsArgument: HSArgs): FullInversId = {
+  def save(inversIds: Seq[InversId], hsArgument: HSArgs, score: Double): FullInversId = {
     val hsArgumentId = HSArgumentRepository.save(HSArgument(None, hsArgument.a1, hsArgument.m1, hsArgument.m2, hsArgument.m3, hsArgument.m4, hsArgument.m5, hsArgument.m6, hsArgument.m7, hsArgument.m8, hsArgument.m9, hsArgument.epsSs))
-    val fullInversId = FullInversRepository.save(FullInvers(None, hsArgumentId))
+    val fullInversId = FullInversRepository.save(FullInvers(None, hsArgumentId, score))
     inversIds.foreach { id => FullInversInversRepository.save(FullInversInvers(None, fullInversId, id)) }
     fullInversId
   }
@@ -39,6 +39,7 @@ object FullInversService {
   def fromRow(fullInvers: FullInvers, inversViews: Seq[InversView], hsArgument: HSArgument): FullInversView = {
     FullInversView(fullInvers.id.get,
       inversViews,
+      fullInvers.score,
       hsArgument.a1, hsArgument.m1, hsArgument.m2, hsArgument.m3, hsArgument.m4, hsArgument.m5, hsArgument.m6, hsArgument.m7, hsArgument.m8, hsArgument.m9, hsArgument.epsSs
     )
   }

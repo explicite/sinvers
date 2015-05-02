@@ -3,7 +3,6 @@ package io
 import akka.actor.{ Actor, ActorLogging, Props }
 import io.Protocol.OptimizeFullInvers
 import opt.{ FullInversFunction, GreyWolfOptimizer }
-import reo.HSArgs
 import ui.controls.FullInversProgress
 
 class FullInversSimulation extends Actor with ActorLogging {
@@ -17,7 +16,7 @@ class FullInversSimulation extends Actor with ActorLogging {
       //create new progress bar for minimize
       progress ! ui.controls.ProgressProtocol.SetStart(System.nanoTime(), wolfs * iterations)
       val min = optimizer.min(wolfs, iterations)
-      progress ! ui.controls.FullInversProgress.SetEnd(inversViews.map(_.id), HSArgs(min))
+      progress ! ui.controls.FullInversProgress.SetEnd(inversViews.map(_.id), min)
   }
 
 }

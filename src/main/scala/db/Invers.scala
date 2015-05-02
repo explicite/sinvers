@@ -6,7 +6,8 @@ case class InversId(value: Long) extends MappedTo[Long]
 case class Invers(id: Option[InversId],
   argsId: HSArgumentId,
   temperature: Double,
-  strainRate: Double)
+  strainRate: Double,
+  score: Double)
 
 class Inverses(tag: Tag)
     extends Table[Invers](tag, "inverses") {
@@ -20,11 +21,13 @@ class Inverses(tag: Tag)
 
   def strainRate = column[Double]("strain_rate")
 
+  def score = column[Double]("score")
+
   //constraints
   def hsArgument = foreignKey("hs_arguments_fk", hsArgumentId, HSArguments.query)(_.id)
 
   //others
-  def * = (id.?, hsArgumentId, temperature, strainRate) <> (Invers.tupled, Invers.unapply)
+  def * = (id.?, hsArgumentId, temperature, strainRate, score) <> (Invers.tupled, Invers.unapply)
 
 }
 

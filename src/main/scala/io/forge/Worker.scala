@@ -14,13 +14,13 @@ class Worker
     with Environment
     with ActorLogging {
 
-  implicit val executionContext = context.system.dispatchers.lookup("scalafx-dispatcher")
+  implicit val executionContext = context.system.dispatchers.lookup("worker-dispatcher")
 
   def receive = {
     case Job(forge, parameters) =>
       val environment = createEnvironment(forge, parameters)
       val builder = processBuilder(forge, environment)
-      val result = Try(Await.result(Future { process(builder.lineStream(silence)) }, 30 seconds)) match {
+      val result = Try(Await.result(Future { process(builder.lineStream_!(silence)) }, 30 seconds)) match {
         case Success((time, load, height, velocity)) => ResultContainer(time, load, height, velocity)
         case Failure(err)                            => ResultContainer.empty
       }

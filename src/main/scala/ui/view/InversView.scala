@@ -5,6 +5,7 @@ import db.InversId
 case class InversView(id: InversId,
   temperature: Double,
   strainRate: Double,
+  score: Double,
   a1: Double,
   m1: Double,
   m2: Double,
