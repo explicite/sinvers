@@ -27,9 +27,11 @@ class DataChart extends Actor with ActorLogging {
 
   private val yAxis = new NumberAxis {}
 
-  private val series = new XYChart.Series[Number, Number] {}
+  private val orgSeries = new XYChart.Series[Number, Number] { name = "org" }
 
-  private val chart = new LineChart[Number, Number](xAxis, yAxis, ObservableBuffer(series)) {
+  private val filteredSeries = new XYChart.Series[Number, Number] { name = "ftr" }
+
+  private val chart = new LineChart[Number, Number](xAxis, yAxis, ObservableBuffer(orgSeries, filteredSeries)) {
     minHeight = 800
     minWidth = 1024
     legendVisible = false
@@ -56,7 +58,25 @@ class DataChart extends Actor with ActorLogging {
       val interval = StaticInterval(min.text.value.toDouble, max.text.value.toDouble)
       slice = slice.slice(interval)
       val dataSlice = slice.jaw.zip(slice.force)
-      series.data = dataSlice.map { case (x, y) => XYChart.Data[Number, Number](x, y) }
+      filteredSeries.data = dataSlice.map { case (x, y) => XYChart.Data[Number, Number](x, y) }
+    }
+  }
+
+  val windowSize = new TextField {
+    promptText = "window size"
+  }
+
+  val numberOfIterations = new TextField {
+    promptText = "number of iterations"
+  }
+
+  val filterButton = new Button {
+    id = "filterButoon"
+    text = "filter"
+    onAction = (ae: ActionEvent) => {
+      slice = slice.filter(windowSize.text.value.toDouble, numberOfIterations.text.value.toInt)
+      val dataFiltered = slice.jaw.zip(slice.force)
+      filteredSeries.data = dataFiltered.map { case (x, y) => XYChart.Data[Number, Number](x, y) }
     }
   }
 
@@ -70,7 +90,15 @@ class DataChart extends Actor with ActorLogging {
   }
 
   val sliceBox = new VBox {
-    children = List(min, max, sliceButton, okButton)
+    children = List(min, max, sliceButton)
+  }
+
+  val filterBox = new VBox {
+    children = List(windowSize, numberOfIterations, filterButton)
+  }
+
+  val box = new VBox {
+    children = List(sliceBox, filterBox, okButton)
   }
 
   val chartPanel = SFXChartUtil.setupZooming(chart, new EventHandler[MouseEvent]() {
@@ -81,13 +109,13 @@ class DataChart extends Actor with ActorLogging {
 
   val panel = new HBox {
     padding = Insets(10)
-    children = List(chartPanel, sliceBox)
+    children = List(chartPanel, box)
   }
 
   override def receive: Receive = {
     case SetData(data) =>
       val chartData = data.jaw.zip(data.force)
-      series.data = chartData.map { case (x, y) => XYChart.Data[Number, Number](x, y) }
+      orgSeries.data = chartData.map { case (x, y) => XYChart.Data[Number, Number](x, y) }
       slice = data
       gui ! Show(panel)
   }

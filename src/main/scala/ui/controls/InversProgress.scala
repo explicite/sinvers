@@ -8,6 +8,7 @@ import db.repository.{ InversRepository, HSArgumentRepository }
 import opt.Result
 import reo.HSArgs
 import ui.Protocol._
+import util.Util
 
 import scala.language.postfixOps
 import scala.math.abs
@@ -87,16 +88,19 @@ class InversProgress extends Actor with ActorLogging with DbConnection {
     children = List(saveButton, removeButton)
   }
 
+  var fit = Double.PositiveInfinity
+
   def receive = toSet
 
   def set(start: Long, max: Double): Receive = {
-    case Iteration(_, stamp) =>
+    case Iteration(newFit, stamp) =>
       Platform.runLater {
         progressBar.setProgress(progressBar.progress.value + 1 / max)
         val iterations = max * progressBar.progress.value
         val performance = ((stamp - start) / 1e9) / iterations
         val duration = Duration.ofSeconds(((max - iterations) * performance).toLong)
-        eta.setText(s"ETA: $duration s perf: ${formatter(1 / performance)} it/s")
+        if (fit > newFit) fit = newFit
+        eta.setText(s"ETA: $duration s perf: ${formatter(1 / performance)} it/s fit:${Util.scienceLowFormatter(fit)}")
       }
 
     case SetEnd(temperature, strainRate, newArgs) =>

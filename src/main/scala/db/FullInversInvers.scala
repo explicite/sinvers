@@ -18,9 +18,9 @@ class FullInversInverses(tag: Tag)
   def inversId = column[InversId]("invers_id")
 
   //constraints
-  def fullInvers = foreignKey("full_invers_fk", fullInversId, FullInverses.query)(_.id)
+  def fullInvers = foreignKey("fii_full_invers_fk", fullInversId, FullInverses.query)(_.id)
 
-  def invers = foreignKey("invers_fk", inversId, Inverses.query)(_.id)
+  def invers = foreignKey("fii_invers_fk", inversId, Inverses.query)(_.id)
 
   //others
   def * = (id.?, fullInversId, inversId) <> (FullInversInvers.tupled, FullInversInvers.unapply)

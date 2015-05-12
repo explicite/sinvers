@@ -15,8 +15,8 @@ case class ResultContainer(time: Seq[Double],
   type T = ResultContainer
 
   def score(interpolator: PolynomialSplineFunction): Double = {
-    if (force.size >= 30) {
-      val (forceToInter, jawToInter) = sections(force.zip(jaw), 5).unzip
+    if (force.size >= 20) {
+      val (forceToInter, jawToInter) = sections(force.zip(jaw), 10).unzip
       val interpolatedForce = jawToInter.map(interpolator.apply)
       val result = forceToInter.zip(interpolatedForce).map {
         case (c, ii) => scala.math.pow(scala.math.E, math.sqrt {

@@ -6,16 +6,22 @@ import io.forge.Protocol.Parameters
 import regex.Parser
 import util.Util
 
+import scala.collection.mutable.ListBuffer
 import scala.sys.process.{ ProcessLogger, Process, ProcessBuilder }
 
 trait Environment extends Parser {
+
+  protected var time = ListBuffer[Double]()
+  protected var load = ListBuffer[Double]()
+  protected var height = ListBuffer[Double]()
+  protected var velocity = ListBuffer[Double]()
 
   val DON = "sym.don"
   val MESH = "work.may"
   val OUT = "file.out"
   val STEERING = "steering.dat"
 
-  val silence = ProcessLogger((o: String) => (), (e: String) => ())
+  val silence = ProcessLogger((o: String) => (), (e: String) => throw new Exception(e))
 
   def createEnvironment(forge: Path, parameters: Parameters): Path = {
     val environment = Files.createTempDirectory("sinvers")

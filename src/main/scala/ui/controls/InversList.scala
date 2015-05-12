@@ -3,10 +3,11 @@ package ui.controls
 import javafx.beans.value
 import javafx.beans.value.ChangeListener
 
-import akka.actor.{ Actor, ActorLogging }
+import akka.actor.{ Props, Actor, ActorLogging }
 import db.service.InversService
 import db.{ DbConnection, InversId }
 import ui.Protocol.{ Absent, Hide, Present, Show }
+import ui.controls.InversChart.SetInvers
 import ui.view.InversView
 import util.Util.scienceLowFormatter
 
@@ -54,6 +55,28 @@ class InversList extends Actor with ActorLogging with DbConnection {
         }
         editable = false
         prefWidth = 350
+      }, new TableColumn[InversView, InversId] {
+        text = "open"
+        cellValueFactory = { features => ObjectProperty[InversId](features.value.id) }
+        cellFactory = { tableColumn =>
+          val cell = new TableCell[InversView, InversId]()
+          val button: Button = new Button {
+            text = "open"
+            onAction = (ae: ActionEvent) => {
+              context.actorOf(Props[InversChart]) ! SetInvers(cell.getItem)
+            }
+          }
+          cell.itemProperty().addListener(new ChangeListener[InversId] {
+            override def changed(observable: value.ObservableValue[_ <: InversId], oldValue: InversId, newValue: InversId): Unit = {
+              if (newValue == null) {
+                cell.setGraphic(null)
+              } else {
+                cell.setGraphic(button)
+              }
+            }
+          })
+          cell
+        }
       },
       new TableColumn[InversView, InversId] {
         text = "delete"

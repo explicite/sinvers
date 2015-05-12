@@ -24,9 +24,26 @@ case class DataContainer(time: Seq[Double],
   }
 
   private def steeringData(maxJaw: Double): Array[Byte] = {
-    time.map(_ - jaw.head).zip(maxJaw +: jaw.map(_ + maxJaw)).map {
+    val data = time.zip(jaw.map(_ + maxJaw))
+    val (filteredTime, filteredJaw) = data.unzip
+    val inter = Interpolator.splineInterpolate(filteredTime.toArray, filteredJaw.toArray)
+    val timeStamp = 0.001
+    val timeMax = filteredTime.max
+    val nTimes = (timeMax / timeStamp).toInt
+    val timeSx = (0 to nTimes).map(t => t.toDouble * timeStamp)
+    val jawSx = timeSx.map(t => inter.apply(t))
+    val filteredData = des(timeSx.zip(jawSx))
+    filteredData.map {
       case (t, j) => s"${trimmedFormatter(t)}, ${trimmedFormatter(j)}"
     }.mkString("\n").getBytes
+  }
+
+  private def des(sx: Seq[(Double, Double)]): Seq[(Double, Double)] = {
+    sx.foldLeft(List(sx.head)) {
+      case (d, (t, j)) =>
+        val (_, lastJaw) = d.last
+        if (lastJaw > j) d :+ (t, j) else d
+    }
   }
 
   def toPrint: Seq[String] = {
@@ -48,8 +65,26 @@ case class DataContainer(time: Seq[Double],
     }
   }
 
-  def filter(k: Double, m: Int): DataContainer = {
-    copy(force = KZ(force, k, m))
+  private def jawSections(sx: Seq[(Double, Double)], slices: Int): List[(Double, Double)] = {
+    val (_, jaw) = sx.unzip
+    val min = jaw.min
+    val max = jaw.max
+    val span = (max - min) / slices
+    val splits = List.iterate(min, slices)(_ + span) :+ max
+    splits.map { s => sx.find { case (f, j) => j <= s + span && j >= s - span } }.flatten.distinct.reverse
+  }
+
+  private def timeSections(sx: Seq[(Double, Double)], slices: Int): List[(Double, Double)] = {
+    val (time, _) = sx.unzip
+    val min = time.min
+    val max = time.max
+    val span = (max - min) / slices
+    val splits = List.iterate(min, slices)(_ + span) :+ max
+    splits.map { s => sx.find { case (t, j) => t <= s + span && t >= s - span } }.flatten.distinct
+  }
+
+  def filter(m: Double, k: Int): DataContainer = {
+    copy(force = KZ(force, m, k))
   }
 
   def interpolator(conversion: Force, maxJaw: Double): PolynomialSplineFunction = {

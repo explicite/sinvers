@@ -18,7 +18,7 @@ class FullInverses(tag: Tag)
   def score = column[Double]("score")
 
   //constraints
-  def hsArgument = foreignKey("hs_arguments_fk", hsArgumentId, HSArguments.query)(_.id)
+  def hsArgument = foreignKey("fi_hs_arguments_fk", hsArgumentId, HSArguments.query)(_.id)
 
   //others
   def * = (id.?, hsArgumentId, score) <> (FullInvers.tupled, FullInvers.unapply)

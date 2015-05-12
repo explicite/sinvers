@@ -82,52 +82,52 @@ class InversConfigurator extends Actor with ActorLogging {
   //hs arguments
   val a1MinInput = new TextField {
     promptText = "a1 min"
-    text = "800"
+    text = "1000"
   }
 
   val a1MaxInput = new TextField {
     promptText = "a1 max"
-    text = "1600"
+    text = "4000"
   }
 
   val m1MinInput = new TextField {
     promptText = "m1 min"
-    text = "-0.003"
+    text = "-0.5"
   }
 
   val m1MaxInput = new TextField {
     promptText = "m1 max"
-    text = "-0.001"
+    text = "0.5"
   }
 
   val m2MinInput = new TextField {
     promptText = "m2 min"
-    text = "-0.25"
+    text = "-0.5"
   }
 
   val m2MaxInput = new TextField {
     promptText = "m2 max"
-    text = "-0.001"
+    text = "0.5"
   }
 
   val m3MinInput = new TextField {
     promptText = "m3 min"
-    text = "0.12"
+    text = "-0.5"
   }
 
   val m3MaxInput = new TextField {
     promptText = "m3 max"
-    text = "0.16"
+    text = "0.5"
   }
 
   val m4MinInput = new TextField {
     promptText = "m4 min"
-    text = "-0.04"
+    text = "-0.5"
   }
 
   val m4MaxInput = new TextField {
     promptText = "m4 max"
-    text = "-0.065"
+    text = "0.5"
   }
 
   val m5MinInput = new TextField {
@@ -190,9 +190,15 @@ class InversConfigurator extends Actor with ActorLogging {
     text = "0"
   }
 
-  val noWolfs = new TextField { promptText = "wolfs" }
+  val noWolfs = new TextField {
+    promptText = "wolfs"
+    text = "200"
+  }
 
-  val noIterations = new TextField { promptText = "iterations" }
+  val noIterations = new TextField {
+    promptText = "iterations"
+    text = "200"
+  }
 
   val leftColumn = new VBox { children = List(experiment, temperature, strainRate, noWolfs, noIterations, samples, decision) }
 

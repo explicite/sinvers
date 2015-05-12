@@ -24,7 +24,7 @@ class Inverses(tag: Tag)
   def score = column[Double]("score")
 
   //constraints
-  def hsArgument = foreignKey("hs_arguments_fk", hsArgumentId, HSArguments.query)(_.id)
+  def hsArgument = foreignKey("i_hs_arguments_fk", hsArgumentId, HSArguments.query)(_.id)
 
   //others
   def * = (id.?, hsArgumentId, temperature, strainRate, score) <> (Invers.tupled, Invers.unapply)
