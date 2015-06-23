@@ -37,6 +37,7 @@ class DataChart extends Actor with ActorLogging {
     legendVisible = false
     createSymbols = false
     animated = false
+    stylesheets add "css/data-chart.css"
   }
 
   private val panner = new ChartPanManager(chart)

@@ -18,7 +18,7 @@ class GUI extends Actor with ActorLogging {
   val inversConfigurator = context.actorOf(Props[InversConfigurator], "invers-configurator")
   val fullInversConfigurator = context.actorOf(Props[FullInversConfigurator], "full-invers-configurator")
   val fullInversList = context.actorOf(Props[FullInversList], "full-invers-list")
-  val simulationList = context.actorOf(Props[InversList], "invers-list")
+  val inversList = context.actorOf(Props[InversList], "invers-list")
   val configuration = context.actorOf(Props[Configuration], "configuration")
 
   val stages = mutable.Set.empty[Stage]
@@ -31,7 +31,7 @@ class GUI extends Actor with ActorLogging {
             onAction = { e: ActionEvent => inversConfigurator ! Present }
           },
           new MenuItem("list") {
-            onAction = { e: ActionEvent => simulationList ! Present }
+            onAction = { e: ActionEvent => inversList ! Present }
           }
         )
       }, new Menu("full invers") {

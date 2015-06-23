@@ -14,17 +14,22 @@ case class ResultContainer(time: Seq[Double],
 
   type T = ResultContainer
 
-  def score(interpolator: PolynomialSplineFunction): Double = {
-    if (force.size >= 20) {
-      val (forceToInter, jawToInter) = sections(force.zip(jaw), 10).unzip
+  def score(interpolator: PolynomialSplineFunction, interval: Interval): Double = {
+    val slice: ResultContainer = (time zip force zip jaw zip velocity).map {
+      case (((t, f), j), v) => (t, f, j, v)
+    }.filter {
+      case (t, f, j, v) =>
+        j >= interval.min && j <= interval.max
+    }
+
+    if (slice.force.size >= 20) {
+      val (forceToInter, jawToInter) = sections(slice.force.zip(slice.jaw), 10).unzip
       val interpolatedForce = jawToInter.map(interpolator.apply)
       val result = forceToInter.zip(interpolatedForce).map {
-        case (c, ii) => scala.math.pow(scala.math.E, math.sqrt {
-          (c - ii) * (c - ii) + 1
-        }.toDouble)
-      }.sum / forceToInter.size
+        case (c, ii) => (c - ii) * (c - ii)
+      }.sum
 
-      result - scala.math.E
+      math.sqrt(result / forceToInter.size.toDouble).toDouble
     } else {
       Double.MaxValue
     }
@@ -56,7 +61,7 @@ case class ResultContainer(time: Seq[Double],
     val max = jaw.max
     val span = (max - min) / slices
     val splits = List.iterate(min, slices)(_ + span) :+ max
-    splits.map { s => sx.find { case (f, j) => j < s + span && j > s - span } }.flatten.distinct
+    splits.flatMap { s => sx.find { case (f, j) => j < s + span && j > s - span } }.distinct
   }
 
 }

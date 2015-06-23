@@ -23,16 +23,14 @@ case class DataContainer(time: Seq[Double],
     write(file, steeringData(maxJaw))
   }
 
-  private def steeringData(maxJaw: Double): Array[Byte] = {
-    val data = time.zip(jaw.map(_ + maxJaw))
-    val (filteredTime, filteredJaw) = data.unzip
-    val inter = Interpolator.splineInterpolate(filteredTime.toArray, filteredJaw.toArray)
-    val timeStamp = 0.001
-    val timeMax = filteredTime.max
-    val nTimes = (timeMax / timeStamp).toInt
-    val timeSx = (0 to nTimes).map(t => t.toDouble * timeStamp)
-    val jawSx = timeSx.map(t => inter.apply(t))
-    val filteredData = des(timeSx.zip(jawSx))
+  private def steeringData(startJaw: Double): Array[Byte] = {
+    val (correctJaw, correctTime) = des(jaw.map(_ + startJaw).zip(time.map(_ - time.min)).reverse).unzip
+    val inter = Interpolator.splineInterpolate(correctJaw.toArray, correctTime.toArray)
+    val jawStamp = 0.002
+    val nJaws = (startJaw / jawStamp).toInt
+    val jawSx = (0 to nJaws).map(j => j.toDouble * jawStamp).filter(d => d > correctJaw.min + jawStamp && d < correctJaw.max - jawStamp)
+    val timeSx = jawSx.map(j => inter.apply(j))
+    val filteredData = (timeSx :+ 0d).zip(jawSx :+ startJaw).reverse.toList
     filteredData.map {
       case (t, j) => s"${trimmedFormatter(t)}, ${trimmedFormatter(j)}"
     }.mkString("\n").getBytes
@@ -57,12 +55,13 @@ case class DataContainer(time: Seq[Double],
   }
 
   def slice(interval: Interval): DataContainer = {
-    (time zip force zip jaw).map {
+    val (nt, nf, nj) = (time zip force zip jaw).map {
       case ((t, f), j) => (t, f, j)
     }.filter {
       case (t, f, j) =>
         j >= interval.min && j <= interval.max
-    }
+    }.unzip3
+    DataContainer(nt, nf, nj)
   }
 
   private def jawSections(sx: Seq[(Double, Double)], slices: Int): List[(Double, Double)] = {
@@ -71,7 +70,7 @@ case class DataContainer(time: Seq[Double],
     val max = jaw.max
     val span = (max - min) / slices
     val splits = List.iterate(min, slices)(_ + span) :+ max
-    splits.map { s => sx.find { case (f, j) => j <= s + span && j >= s - span } }.flatten.distinct.reverse
+    splits.flatMap { s => sx.find { case (f, j) => j <= s + span && j >= s - span } }.distinct.reverse
   }
 
   private def timeSections(sx: Seq[(Double, Double)], slices: Int): List[(Double, Double)] = {
@@ -80,7 +79,7 @@ case class DataContainer(time: Seq[Double],
     val max = time.max
     val span = (max - min) / slices
     val splits = List.iterate(min, slices)(_ + span) :+ max
-    splits.map { s => sx.find { case (t, j) => t <= s + span && t >= s - span } }.flatten.distinct
+    splits.flatMap { s => sx.find { case (t, j) => t <= s + span && t >= s - span } }.distinct
   }
 
   def filter(m: Double, k: Int): DataContainer = {

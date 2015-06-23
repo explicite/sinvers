@@ -31,7 +31,7 @@ case class AdaptiveNelderMead(f: (Seq[Double]) => Double) {
   }
 
   private[this] def generate(proposal: Seq[Double]): Seq[Seq[Double]] = {
-    (for (i <- 0 until proposal.size) yield {
+    (for (i <- proposal.indices) yield {
       proposal.zipWithIndex.map {
         case (element, index) => if (index == i) element * 1.0 else element * 0.00025
       }

@@ -99,7 +99,7 @@ case class GreyWolfOptimizer[T <: Interval](f: (Seq[Double]) => Double, bounds: 
             val beta = if (head > alpha && head < currBeta) head else Beta
             val delta = if (head > alpha && head > beta && head < currDelta) head else Delta
             reg(alpha, beta, delta)(tail)
-          case _ => Context(Alpha, Beta, Delta, evaluated.map(_._1).flatten)
+          case _ => Context(Alpha, Beta, Delta, evaluated.flatMap(_._1))
         }
       }
       reg(currAlpha, currBeta, currDelta)(propositions)
