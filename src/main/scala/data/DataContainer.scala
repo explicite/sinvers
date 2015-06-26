@@ -23,16 +23,23 @@ case class DataContainer(time: Seq[Double],
     write(file, steeringData(maxJaw))
   }
 
-  private def steeringData(startJaw: Double): Array[Byte] = {
+  /*private def steeringData(startJaw: Double): Array[Byte] = {
     val (correctJaw, correctTime) = des(jaw.map(_ + startJaw).zip(time.map(_ - time.min)).reverse).unzip
     val inter = Interpolator.splineInterpolate(correctJaw.toArray, correctTime.toArray)
     val jawStamp = 0.002
     val nJaws = (startJaw / jawStamp).toInt
-    val jawSx = (0 to nJaws).map(j => j.toDouble * jawStamp).filter(d => d > correctJaw.min + jawStamp && d < correctJaw.max - jawStamp)
-    val timeSx = jawSx.map(j => inter.apply(j))
-    val filteredData = (timeSx :+ 0d).zip(jawSx :+ startJaw).reverse.toList
+    val jawSx = (0 to nJaws).map(j => BigDecimal(j) * jawStamp).filter(d => d > correctJaw.min + jawStamp && d < correctJaw.max - jawStamp)
+    val timeSx = jawSx.map(j => inter.apply(j.toDouble))
+    val filteredData = (timeSx :+ BigDecimal(0)).zip(jawSx :+ BigDecimal(startJaw)).reverse.toList
     filteredData.map {
-      case (t, j) => s"${trimmedFormatter(t)}, ${trimmedFormatter(j)}"
+      case (t, j) => s"${trimmedFormatter(t.toDouble)}, ${trimmedFormatter(j.toDouble)}"
+    }.mkString("\n").getBytes
+  }*/
+
+  private def steeringData(startJaw: Double): Array[Byte] = {
+    val filteredData = jawSection(des(jaw.map(_ + startJaw).zip(time.map(_ - time.min))), 2500).reverse
+    filteredData.map {
+      case (t, j) => s"${trimmedFormatter(t.toDouble)}, ${trimmedFormatter(j.toDouble)}"
     }.mkString("\n").getBytes
   }
 
@@ -40,7 +47,7 @@ case class DataContainer(time: Seq[Double],
     sx.foldLeft(List(sx.head)) {
       case (d, (t, j)) =>
         val (_, lastJaw) = d.last
-        if (lastJaw > j) d :+ (t, j) else d
+        if (lastJaw <= j) d :+ (t, j) else d
     }
   }
 
@@ -64,22 +71,17 @@ case class DataContainer(time: Seq[Double],
     DataContainer(nt, nf, nj)
   }
 
-  private def jawSections(sx: Seq[(Double, Double)], slices: Int): List[(Double, Double)] = {
-    val (_, jaw) = sx.unzip
+  private def jawSection(sx: Seq[(Double, Double)], slices: Int): List[(Double, Double)] = {
+    val (jaw, _) = sx.unzip
     val min = jaw.min
     val max = jaw.max
     val span = (max - min) / slices
-    val splits = List.iterate(min, slices)(_ + span) :+ max
-    splits.flatMap { s => sx.find { case (f, j) => j <= s + span && j >= s - span } }.distinct.reverse
-  }
-
-  private def timeSections(sx: Seq[(Double, Double)], slices: Int): List[(Double, Double)] = {
-    val (time, _) = sx.unzip
-    val min = time.min
-    val max = time.max
-    val span = (max - min) / slices
-    val splits = List.iterate(min, slices)(_ + span) :+ max
-    splits.flatMap { s => sx.find { case (t, j) => t <= s + span && t >= s - span } }.distinct
+    val splits = List.iterate(jaw.min, slices)(_ + span)
+    splits.flatMap { s =>
+      sx.filter {
+        case (j, t) => j <= s + span && j >= s - span
+      }.sortBy(_._2).headOption
+    }.distinct
   }
 
   def filter(m: Double, k: Int): DataContainer = {

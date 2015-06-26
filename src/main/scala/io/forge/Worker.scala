@@ -42,7 +42,7 @@ class Worker
         case 0 => ResultContainer(time, load, height, velocity)
       })
 
-      val result = Try(Await.result(future, 15 seconds)) match {
+      val result = Try(Await.result(future, 45 seconds)) match {
         case Success(data) => data
         case _             => ResultContainer.empty
       }

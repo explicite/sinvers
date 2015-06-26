@@ -82,52 +82,52 @@ class InversConfigurator extends Actor with ActorLogging {
   //hs arguments
   val a1MinInput = new TextField {
     promptText = "a1 min"
-    text = "1000"
+    text = "100"
   }
 
   val a1MaxInput = new TextField {
     promptText = "a1 max"
-    text = "4000"
+    text = "250"
   }
 
   val m1MinInput = new TextField {
     promptText = "m1 min"
-    text = "-0.5"
+    text = "-2.0E-3"
   }
 
   val m1MaxInput = new TextField {
     promptText = "m1 max"
-    text = "0.5"
+    text = "-3.0E-3"
   }
 
   val m2MinInput = new TextField {
     promptText = "m2 min"
-    text = "-0.5"
+    text = "2.0E-1"
   }
 
   val m2MaxInput = new TextField {
     promptText = "m2 max"
-    text = "0.5"
+    text = "3.0E-1"
   }
 
   val m3MinInput = new TextField {
     promptText = "m3 min"
-    text = "-0.5"
+    text = "2.0E-2"
   }
 
   val m3MaxInput = new TextField {
     promptText = "m3 max"
-    text = "0.5"
+    text = "3.0E-2"
   }
 
   val m4MinInput = new TextField {
     promptText = "m4 min"
-    text = "-0.5"
+    text = "4.0E-3"
   }
 
   val m4MaxInput = new TextField {
     promptText = "m4 max"
-    text = "0.5"
+    text = "5.0E-3"
   }
 
   val m5MinInput = new TextField {

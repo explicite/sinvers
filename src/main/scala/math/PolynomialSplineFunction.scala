@@ -5,7 +5,7 @@ import java.util.Arrays.binarySearch
 case class PolynomialSplineFunction(knots: Array[Double], polynomials: Seq[Polynomial]) {
   val intervalsCount = knots.length - 1
 
-  def apply(x: Double): Double = {
+  def apply(x: Double): BigDecimal = {
     require(x >= knots(0) && x <= knots(intervalsCount))
 
     val i = binarySearch(knots, x) match {

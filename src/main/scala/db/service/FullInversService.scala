@@ -10,7 +10,7 @@ object FullInversService {
   def save(inversIds: Seq[InversId], hsArgument: HSArgs, score: Double): FullInversId = {
     val hsArgumentId = HSArgumentRepository.save(HSArgument(None, hsArgument.a1, hsArgument.m1, hsArgument.m2, hsArgument.m3, hsArgument.m4, hsArgument.m5, hsArgument.m6, hsArgument.m7, hsArgument.m8, hsArgument.m9, hsArgument.epsSs))
     val fullInversId = FullInversRepository.save(FullInvers(None, hsArgumentId, score))
-    val inversIdsCopy = inversIds.map(InversRepository.findById).map(_.copy(id = None)).map(InversRepository.save)
+    val inversIdsCopy = inversIds.map(InversRepository.findById).map(InversRepository.save)
     inversIdsCopy.foreach { id => FullInversInversRepository.save(FullInversInvers(None, fullInversId, id)) }
     fullInversId
   }
@@ -33,8 +33,6 @@ object FullInversService {
 
   def deleteById(id: FullInversId): Int = {
     FullInversInversRepository.deleteByFullInversId(id)
-    FullInversInversRepository.findByFullInversId(id).map(fii => InversRepository.deleteById(fii.inversId))
-    HSArgumentRepository.deleteById(FullInversRepository.findById(id).hSArgumentId)
     FullInversRepository.deleteById(id)
   }
 
