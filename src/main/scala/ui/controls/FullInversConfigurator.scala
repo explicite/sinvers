@@ -89,7 +89,7 @@ class FullInversConfigurator extends Actor with ActorLogging {
 
   val m4MaxInput = new TextField {
     promptText = "m4 max"
-    text = "5.0E-3"
+    text = "-5.0E-3"
   }
 
   val m5MinInput = new TextField {
