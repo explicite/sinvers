@@ -15,9 +15,13 @@ import scalafx.scene.chart.{ LineChart, XYChart, NumberAxis }
 class FullInversChart extends Actor with ActorLogging with DbConnection {
   private val gui = context.system.actorSelection("akka://sinvers/user/gui")
 
-  private val xAxis = new NumberAxis {}
+  private val xAxis = new NumberAxis {
+    label = "Strain"
+  }
 
-  private val yAxis = new NumberAxis {}
+  private val yAxis = new NumberAxis {
+    label = "Stress[MPa]"
+  }
 
   private var chart: LineChart[Number, Number] = null
 
@@ -34,8 +38,8 @@ class FullInversChart extends Actor with ActorLogging with DbConnection {
       }
 
       val inversFunctionsWithTag = inversFunctions.map(fun => (fun, "org"))
-      val optimizedFunctionWithTag = optimizedFunctions.map(fun => (fun, "fi"))
-      val functions = inversFunctionsWithTag ++: optimizedFunctionWithTag
+      val optimizedFunctionWithTag = optimizedFunctions.map(fun => (fun, "opt"))
+      val functions = inversFunctionsWithTag //++: optimizedFunctionWithTag
 
       val data = functions.map {
         case (function, tag) => (strains.zip(strains.map(function.apply)).map { case (x, y) => XYChart.Data[Number, Number](x, y) }, function.args.temperature, function.args.strainRate, tag)

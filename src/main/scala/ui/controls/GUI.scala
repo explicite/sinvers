@@ -19,7 +19,7 @@ class GUI extends Actor with ActorLogging {
   val fullInversConfigurator = context.actorOf(Props[FullInversConfigurator], "full-invers-configurator")
   val fullInversList = context.actorOf(Props[FullInversList], "full-invers-list")
   val inversList = context.actorOf(Props[InversList], "invers-list")
-  val diffConfigurator = context.actorOf(Props[DiffConfigurator], "diff-configurator")
+  val diffChart = context.actorOf(Props[DiffChart].withDispatcher("scalafx-dispatcher"), "diff-chart")
   val configuration = context.actorOf(Props[Configuration], "configuration")
 
   val stages = mutable.Set.empty[Stage]
@@ -48,7 +48,7 @@ class GUI extends Actor with ActorLogging {
       new Menu("diff") {
         items = List(
           new MenuItem("new       ") {
-            onAction = { e: ActionEvent => diffConfigurator ! Present }
+            onAction = { e: ActionEvent => diffChart ! Present }
           }
         )
       },

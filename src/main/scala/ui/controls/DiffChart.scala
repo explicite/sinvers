@@ -1,32 +1,30 @@
 package ui.controls
 
-import javafx.event.EventHandler
-import javafx.scene.input.{ MouseButton, MouseEvent }
-
-import akka.actor.{ Actor, ActorLogging }
+import scalafx.Includes._
+import akka.actor.{ Props, Actor, ActorLogging }
 import data.{ KGF, ResultContainer, DataContainer }
-import ui.Protocol.{ Hide, Show }
-import ui.controls.DiffChart.SetData
-import util.jfx.SFXChartUtil
-import util.jfx.chart.ChartPanManager
-
+import ui.Protocol.{ Absent, Present, Hide, Show }
+import ui.controls.DiffChart.AddData
 import scalafx.collections.ObservableBuffer
+import scalafx.event.ActionEvent
 import scalafx.geometry.Insets
 import scalafx.scene.chart.{ LineChart, NumberAxis, XYChart }
+import scalafx.scene.control.Button
 import scalafx.scene.layout.HBox
 
 class DiffChart extends Actor with ActorLogging {
-  private val gui = context.system.actorSelection("akka://sinvers/user/gui")
 
-  private val xAxis = new NumberAxis {}
+  private val xAxis = new NumberAxis {
+    label = "Jaw[mm]"
+  }
 
-  private val yAxis = new NumberAxis {}
+  private val yAxis = new NumberAxis {
+    label = "Force[MPa]"
+  }
 
-  private val orgSeries = new XYChart.Series[Number, Number] { name = "org" }
+  private val series = ObservableBuffer.empty[javafx.scene.chart.XYChart.Series[Number, Number]]
 
-  private val coputedSeries = new XYChart.Series[Number, Number] { name = "comp" }
-
-  private val chart = new LineChart[Number, Number](xAxis, yAxis, ObservableBuffer(orgSeries, coputedSeries)) {
+  private val chart = new LineChart[Number, Number](xAxis, yAxis, series) {
     minHeight = 800
     minWidth = 1024
     createSymbols = false
@@ -34,49 +32,46 @@ class DiffChart extends Actor with ActorLogging {
     stylesheets add "css/data-chart.css"
   }
 
-  private val panner = new ChartPanManager(chart)
-
-  private var org: DataContainer = null
-  private val comp: ResultContainer = null
-
-  val chartPanel = SFXChartUtil.setupZooming(chart, new EventHandler[MouseEvent]() {
-    override def handle(event: MouseEvent): Unit = {
-      if (event.getButton != MouseButton.PRIMARY || event.isShortcutDown) event.consume()
+  val addButton = new Button {
+    text = "add"
+    onAction = (ae: ActionEvent) => {
+      context.system.actorOf(Props[DiffConfigurator]) ! Present
+      context become addNew
     }
-  })
+  }
 
   val panel = new HBox {
     padding = Insets(10)
-    children = List(chartPanel)
+    children = List(chart, addButton)
   }
 
-  override def receive: Receive = {
-    case SetData(o, c) =>
+  override def receive: Receive = ready
+
+  def ready: Receive = {
+    case Present =>
+      sender() ! Show(panel)
+    case Absent =>
+      sender() ! Hide(panel)
+  }
+
+  def addNew: Receive = {
+    case AddData(o, c, tile) =>
+      val orgSeries = new XYChart.Series[Number, Number] { name = s"org {$tile}" }
+      val coputedSeries = new XYChart.Series[Number, Number] { name = s"opt {$tile}" }
       val orgData = o.jaw.zip(o.force)
-      orgSeries.data = orgData.map { case (x, y) => XYChart.Data[Number, Number](x, y) }
+      orgSeries.data = orgData.map { case (x, y) => XYChart.Data[Number, Number](-1d * x, -1d * y) }
+      series.add(orgSeries)
       val compData = c.jaw.map(_ - 12d).zip(c.force.map(_ * KGF.conversion))
-      coputedSeries.data = compData.map { case (x, y) => XYChart.Data[Number, Number](x, y) }
-      gui ! Show(panel)
-  }
+      coputedSeries.data = compData.map { case (x, y) => XYChart.Data[Number, Number](-1d * x, -1d * y) }
+      series.add(coputedSeries)
+      chart.data = series
 
-  def clean(): Unit = gui ! Hide(panel)
-
-  @throws[Exception](classOf[Exception])
-  override def preStart(): Unit = {
-    panner.setMouseFilter(new EventHandler[MouseEvent]() {
-      override def handle(event: MouseEvent): Unit = {
-        if (event.getButton == MouseButton.SECONDARY ||
-          (event.getButton == MouseButton.PRIMARY &&
-            event.isShortcutDown)) {} else event.consume()
-      }
-    })
-    panner.start()
   }
 
 }
 
 object DiffChart {
 
-  case class SetData(org: DataContainer, computed: ResultContainer)
+  case class AddData(org: DataContainer, computed: ResultContainer, tail: String)
 
 }

@@ -7,13 +7,13 @@ import reo.HSArgs
 
 import java.nio.file.Paths
 
-import akka.actor.{ Props, Actor, ActorLogging }
+import akka.actor.{ ActorRef, Props, Actor, ActorLogging }
 import db.Configurations
 import db.repository.ConfigurationRepository
 import opt.StaticInterval
 import ui.Protocol.{ Absent, Hide, Present, Show }
 import ui.controls.DataChart.{ SetData => SetChart }
-import ui.controls.DiffChart.{ SetData => SetDiff }
+import ui.controls.DiffChart.{ AddData => AddDiff }
 import ui.controls.InversProtocol.Slice
 
 import scala.util.{ Failure, Success, Try }
@@ -26,6 +26,10 @@ import scalafx.scene.layout.{ HBox, VBox }
 import scalafx.stage.FileChooser
 
 class DiffConfigurator extends Actor with ActorLogging {
+  private val gui = context.system.actorSelection("akka://sinvers/user/gui")
+
+  var diff: ActorRef = null
+
   val configurator = new HBox() {
     padding = Insets(20)
     spacing = 10
@@ -109,23 +113,15 @@ class DiffConfigurator extends Actor with ActorLogging {
 
   def waitForResult(slice: DataContainer): Receive = {
     case result: ResultContainer =>
-      context.system.actorOf(Props[DiffChart]) ! SetDiff(
+      diff ! AddDiff(
         slice,
-        result
+        result,
+        s"str:${strainRate.text.value} tmp:${temperature.text.value}"
       )
   }
 
-  val cancelButton = new Button {
-    id = "cancel"
-    text = "cancel"
-    onAction = (ae: ActionEvent) => {
-      cleanup()
-      context.parent ! Hide(configurator)
-    }
-  }
-
   val decision = new HBox {
-    children = List(okButton, cancelButton)
+    children = List(okButton)
   }
 
   //hs arguments
@@ -214,18 +210,13 @@ class DiffConfigurator extends Actor with ActorLogging {
 
   def ready: Receive = {
     case Present =>
-      sender() ! Show(configurator)
+      diff = sender()
+      gui ! Show(configurator)
     case Absent =>
-      sender() ! Hide(configurator)
+      gui ! Hide(configurator)
   }
 
   @throws[Exception](classOf[Exception])
   override def preStart(): Unit = configurator.children = List(leftColumn, rightColumn)
-
-  private def cleanup(): Unit = {
-    experimentInput.text = null
-    temperature.text = null
-    strainRate.text = null
-  }
 
 }
