@@ -9,8 +9,10 @@ import db.{ DbConnection, FullInversId }
 import ui.Protocol.{ Absent, Hide, Present, Show }
 import ui.controls.FullInversChart.SetFullInvers
 import ui.view.FullInversView
+import util.Util
 import util.Util.scienceLowFormatter
 
+import scala.util.{ Failure, Success, Try }
 import scalafx.Includes._
 import scalafx.beans.property.ObjectProperty
 import scalafx.collections.ObservableBuffer
@@ -19,6 +21,8 @@ import scalafx.scene.control.TableColumn._
 import scalafx.scene.control._
 import scalafx.scene.image.{ Image, ImageView }
 import scalafx.scene.layout.VBox
+import scalafx.stage.FileChooser
+import scalafx.stage.FileChooser.ExtensionFilter
 
 class FullInversList extends Actor with ActorLogging with DbConnection {
 
@@ -66,6 +70,40 @@ class FullInversList extends Actor with ActorLogging with DbConnection {
               }
             }
           })
+          cell
+        }
+      },
+      new TableColumn[FullInversView, FullInversView] {
+        text = "export"
+        cellValueFactory = { features => ObjectProperty[FullInversView](features.value) }
+        cellFactory = { tableColumn =>
+          val cell = new TableCell[FullInversView, FullInversView]()
+          val button: Button = new Button {
+            text = "export"
+            onAction = (ae: ActionEvent) => {
+              val fileChooser = new FileChooser() {
+                title = "Save result"
+                selectedExtensionFilter = new ExtensionFilter("TXT files (*.txt)", "*.txt")
+              }
+              Try(fileChooser.showSaveDialog(cell.getParent.getParent.getScene.getWindow)) match {
+                case Success(file) =>
+                  val text = cell.getItem.txt
+                  Util.write(file.toPath, text.getBytes)
+                case Failure(err) => log.error(err.getMessage)
+              }
+              refresh()
+            }
+          }
+          cell.itemProperty().addListener(new ChangeListener[FullInversView] {
+            override def changed(observable: value.ObservableValue[_ <: FullInversView], oldValue: FullInversView, newValue: FullInversView): Unit = {
+              if (newValue == null) {
+                cell.setGraphic(null)
+              } else {
+                cell.setGraphic(button)
+              }
+            }
+          })
+          cell.setContentDisplay(ContentDisplay.GraphicOnly)
           cell
         }
       },

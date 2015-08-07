@@ -23,19 +23,6 @@ case class DataContainer(time: Seq[Double],
     write(file, steeringData(maxJaw))
   }
 
-  /*private def steeringData(startJaw: Double): Array[Byte] = {
-    val (correctJaw, correctTime) = des(jaw.map(_ + startJaw).zip(time.map(_ - time.min)).reverse).unzip
-    val inter = Interpolator.splineInterpolate(correctJaw.toArray, correctTime.toArray)
-    val jawStamp = 0.002
-    val nJaws = (startJaw / jawStamp).toInt
-    val jawSx = (0 to nJaws).map(j => BigDecimal(j) * jawStamp).filter(d => d > correctJaw.min + jawStamp && d < correctJaw.max - jawStamp)
-    val timeSx = jawSx.map(j => inter.apply(j.toDouble))
-    val filteredData = (timeSx :+ BigDecimal(0)).zip(jawSx :+ BigDecimal(startJaw)).reverse.toList
-    filteredData.map {
-      case (t, j) => s"${trimmedFormatter(t.toDouble)}, ${trimmedFormatter(j.toDouble)}"
-    }.mkString("\n").getBytes
-  }*/
-
   private def steeringData(startJaw: Double): Array[Byte] = {
     val filteredData = jawSection(des(jaw.map(_ + startJaw).zip(time.map(_ - time.min))), 2500).reverse
     filteredData.map {

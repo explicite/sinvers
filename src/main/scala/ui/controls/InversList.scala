@@ -9,8 +9,10 @@ import db.{ DbConnection, InversId }
 import ui.Protocol.{ Absent, Hide, Present, Show }
 import ui.controls.InversChart.SetInvers
 import ui.view.InversView
+import util.Util
 import util.Util.scienceLowFormatter
 
+import scala.util.{ Failure, Success, Try }
 import scalafx.Includes._
 import scalafx.beans.property.ObjectProperty
 import scalafx.collections.ObservableBuffer
@@ -19,6 +21,8 @@ import scalafx.scene.control.TableColumn._
 import scalafx.scene.control._
 import scalafx.scene.image.{ Image, ImageView }
 import scalafx.scene.layout.VBox
+import scalafx.stage.FileChooser
+import scalafx.stage.FileChooser.ExtensionFilter
 
 class InversList extends Actor with ActorLogging with DbConnection {
 
@@ -75,6 +79,40 @@ class InversList extends Actor with ActorLogging with DbConnection {
               }
             }
           })
+          cell
+        }
+      },
+      new TableColumn[InversView, InversView] {
+        text = "export"
+        cellValueFactory = { features => ObjectProperty[InversView](features.value) }
+        cellFactory = { tableColumn =>
+          val cell = new TableCell[InversView, InversView]()
+          val button: Button = new Button {
+            text = "export"
+            onAction = (ae: ActionEvent) => {
+              val fileChooser = new FileChooser() {
+                title = "Save result"
+                selectedExtensionFilter = new ExtensionFilter("TXT files (*.txt)", "*.txt")
+              }
+              Try(fileChooser.showSaveDialog(cell.getParent.getParent.getScene.getWindow)) match {
+                case Success(file) =>
+                  val text = cell.getItem.txt
+                  Util.write(file.toPath, text.getBytes)
+                case Failure(err) => log.error(err.getMessage)
+              }
+              refresh()
+            }
+          }
+          cell.itemProperty().addListener(new ChangeListener[InversView] {
+            override def changed(observable: value.ObservableValue[_ <: InversView], oldValue: InversView, newValue: InversView): Unit = {
+              if (newValue == null) {
+                cell.setGraphic(null)
+              } else {
+                cell.setGraphic(button)
+              }
+            }
+          })
+          cell.setContentDisplay(ContentDisplay.GraphicOnly)
           cell
         }
       },
